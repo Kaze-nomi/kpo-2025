@@ -1,4 +1,3 @@
-<<<<<<< HEAD:practice/practise-3/src/main/java/hse/kpo/services/CustomerStorage.java
 package hse.kpo.services;
 
 import hse.kpo.domains.Customer;
@@ -9,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+<<<<<<< HEAD
 public class CustomerStorage implements ICustomerProvider {
 <<<<<<< HEAD
     private final List<Customer> customers = new ArrayList<>();
@@ -27,6 +27,10 @@ public class CustomerStorage implements ICustomerProvider{
      */
     @Getter
 >>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/CustomerStorage.java
+=======
+@RequiredArgsConstructor
+public class CustomerStorage implements ICustomerProvider {
+>>>>>>> dfd8807 (fix)
     private List<Customer> customers = new ArrayList<>();
 >>>>>>> 2684c20 (delete)
 

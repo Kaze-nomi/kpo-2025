@@ -10,6 +10,8 @@ import java.util.Objects;
 /**
  * A service that provides cars to customers.
  */
+@Component
+@RequiredArgsConstructor
 public class HseCarService {
 
     private final ICarProvider carProvider;

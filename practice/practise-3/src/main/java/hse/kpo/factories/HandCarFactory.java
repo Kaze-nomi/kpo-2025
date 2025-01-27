@@ -19,8 +19,6 @@ public class HandCarFactory implements ICarFactory<EmptyEngineParams> {
  *
  */
 package studying;
-=======
-
 public class HandCarFactory implements ICarFactory<EmptyEngineParams> {
 >>>>>>> fa73bc1 (delete)
 

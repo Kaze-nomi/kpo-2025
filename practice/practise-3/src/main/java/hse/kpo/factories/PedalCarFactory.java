@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 /**
  * A factory that creates cars with pedal engines.
  */
+@Component
+@RequiredArgsConstructor
 public class PedalCarFactory implements ICarFactory<PedalEngineParams>{
 
     /**
