@@ -11,8 +11,8 @@ version = "0.0.1-SNAPSHOT"
 checkstyle {
 	toolVersion = "10.13.0"
 	isIgnoreFailures = false
-	maxWarnings = 10000000
-	maxErrors = 10000000
+	maxWarnings = 1000
+	maxErrors = 1000
 }
 
 java {
@@ -43,4 +43,5 @@ dependencies {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
 
