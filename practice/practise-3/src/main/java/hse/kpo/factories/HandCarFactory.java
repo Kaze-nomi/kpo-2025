@@ -1,4 +1,3 @@
-<<<<<<< HEAD:practice/practise-3/src/main/java/hse/kpo/factories/HandCarFactory.java
 package hse.kpo.factories;
 
 import hse.kpo.domains.Car;
@@ -7,16 +6,20 @@ import hse.kpo.interfaces.ICarFactory;
 import hse.kpo.params.EmptyEngineParams;
 import org.springframework.stereotype.Component;
 
+<<<<<<< HEAD
 @Component
 public class HandCarFactory implements ICarFactory<EmptyEngineParams> {
 <<<<<<< HEAD
 =======
 =======
+=======
+>>>>>>> a04facd (fix)
 /**
  * A factory that creates cars with manual engines.
  *
  */
 package studying;
+=======
 
 public class HandCarFactory implements ICarFactory<EmptyEngineParams> {
 >>>>>>> fa73bc1 (delete)
@@ -29,9 +32,12 @@ public class HandCarFactory implements ICarFactory<EmptyEngineParams> {
      * @return the created car
      */
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/HandCarFactory.java
 >>>>>>> fa73bc1 (delete)
+=======
+>>>>>>> a04facd (fix)
     @Override
     public Car createCar(EmptyEngineParams carParams, int carNumber) {
         var engine = new HandEngine(); // Creates a manual engine with no parameters
