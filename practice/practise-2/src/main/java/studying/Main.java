@@ -12,6 +12,7 @@ import studying.services.HseCarService;
 public class Main {
     public static void main(String[] args) {
 <<<<<<< HEAD
+<<<<<<< HEAD
         System.out.println("HSE");
 
         var carService = new CarService();
@@ -41,6 +42,8 @@ public class Main {
 
         customerStorage.getCustomers().stream().map(Customer::toString).forEach(System.out::println);
 =======
+=======
+>>>>>>> fae1144 (merge)
         // # Тестирование
         // 1. Создать экземпляр класса `CarService`
         CarService carService = new CarService();
@@ -86,6 +89,9 @@ public class Main {
         //     - Один покупатель остался без автомобиля
         //     - При этом у всех врученных автомобилей различные номера
         customerStorage.getCustomers().forEach(customer -> System.out.println(customer));
+<<<<<<< HEAD
+>>>>>>> fae1144 (merge)
+=======
 >>>>>>> fae1144 (merge)
     }
 }
