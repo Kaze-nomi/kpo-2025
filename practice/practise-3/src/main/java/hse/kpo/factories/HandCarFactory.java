@@ -5,7 +5,8 @@ import hse.kpo.domains.HandEngine;
 import hse.kpo.interfaces.ICarFactory;
 import hse.kpo.params.EmptyEngineParams;
 
-
+@Component
+@RequiredArgsConstructor
 public class HandCarFactory implements ICarFactory<EmptyEngineParams> {
 
     /**
