@@ -1,11 +1,21 @@
+<<<<<<< HEAD:practice/practise-3/src/main/java/hse/kpo/interfaces/ICarProvider.java
 package hse.kpo.interfaces;
 
 import hse.kpo.domains.Car;
 import hse.kpo.domains.Customer;
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> fa73bc1 (delete)
 /**
  * Interface for providers that provide cars to customers.
  * 
  */
+<<<<<<< HEAD
+=======
+package studying;
+>>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/ICarProvider.java
+>>>>>>> fa73bc1 (delete)
 
 /**
  * Interface for providers that provide cars to customers.

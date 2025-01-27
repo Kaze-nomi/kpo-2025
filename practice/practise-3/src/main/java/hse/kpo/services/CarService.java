@@ -9,13 +9,22 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+<<<<<<< HEAD:practice/practise-3/src/main/java/hse/kpo/services/CarService.java
 public class CarService implements ICarProvider {
+=======
+/**
+ * A service that provides cars to customers.
+ */
+public class CarService implements ICarProvider{
+>>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/CarService.java
 
     /**
      * A list of available cars.
      */
+<<<<<<< HEAD
     @Getter
+=======
+>>>>>>> fa73bc1 (delete)
     private final List<Car> cars = new ArrayList<>();
 
     /**

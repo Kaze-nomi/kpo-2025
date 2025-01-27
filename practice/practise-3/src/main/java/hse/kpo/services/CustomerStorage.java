@@ -1,3 +1,4 @@
+<<<<<<< HEAD:practice/practise-3/src/main/java/hse/kpo/services/CustomerStorage.java
 package hse.kpo.services;
 
 import hse.kpo.domains.Customer;
@@ -9,7 +10,25 @@ import java.util.List;
 
 @Component
 public class CustomerStorage implements ICustomerProvider {
+<<<<<<< HEAD
     private final List<Customer> customers = new ArrayList<>();
+=======
+=======
+/**
+ * Class for storing customers.
+ * Implements {@link ICustomerProvider} interface.
+ *
+ * 
+ * 
+ */
+public class CustomerStorage implements ICustomerProvider{
+    /**
+     * List of customers.
+     */
+    @Getter
+>>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/CustomerStorage.java
+    private List<Customer> customers = new ArrayList<>();
+>>>>>>> 2684c20 (delete)
 
     /**
      * {@inheritDoc}
