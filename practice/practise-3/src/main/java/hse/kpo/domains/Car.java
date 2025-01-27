@@ -10,6 +10,11 @@ import lombok.ToString;
  *     This class represents a car.
  * </p>
  */
+/**
+ * <p>
+ *     This class represents a car.
+ * </p>
+ */
 @ToString
 @RequiredArgsConstructor
 public class Car {
@@ -21,19 +26,15 @@ public class Car {
      * Get the VIN (Vehicle Identification Number) of the car.
      * @return the VIN of the car
      */
+    /**
+     * Get the VIN (Vehicle Identification Number) of the car.
+     * @return the VIN of the car
+     */
     @Getter
-    private int vin;
+    private int VIN;
 
     /**
      * Creates a new car with specified VIN and engine.
-<<<<<<< HEAD
-<<<<<<< HEAD
-     * @param vin the VIN of the car
-     * @param engine the engine of the car
-     */
-    public Car(int vin, IEngine engine) {
-        this.vin = vin;
-=======
      * @param VIN the VIN of the car
      * @param engine the engine of the car
      */
@@ -55,17 +56,13 @@ public class Car {
      * @param customer the customer to check
      * @return true if the car is compatible with the customer, false otherwise
      */
+    /**
+     * Checks if the car is compatible with the customer.
+     * @param customer the customer to check
+     * @return true if the car is compatible with the customer, false otherwise
+     */
     public boolean isCompatible(Customer customer) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-        return this.engine.isCompatible(customer);
-=======
         return this.engine.isCompatible(customer); // inside the method just call the corresponding method of the engine
->>>>>>> fa73bc1 (delete)
-=======
-        return this.engine.isCompatible(customer);
->>>>>>> 72b345e (MeowHomework)
     }
-
 }
 

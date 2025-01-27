@@ -9,8 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class CustomerStorage implements ICustomerProvider {
-    private final List<Customer> customers = new ArrayList<>();
+public class CustomerStorage implements ICustomerProvider{
+    /**
+     * List of customers.
+     */
+    @Getter
+    private List<Customer> customers = new ArrayList<>();
 
     /**
      * {@inheritDoc}

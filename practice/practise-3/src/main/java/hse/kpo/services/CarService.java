@@ -9,8 +9,10 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
-public class CarService implements ICarProvider {
+/**
+ * A service that provides cars to customers.
+ */
+public class CarService implements ICarProvider{
 
     /**
      * A list of available cars.
