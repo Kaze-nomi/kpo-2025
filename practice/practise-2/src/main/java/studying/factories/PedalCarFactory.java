@@ -1,13 +1,5 @@
 package studying.factories;
 
-<<<<<<< HEAD:practice/practise-2/src/main/java/studying/factories/PedalCarFactory.java
-import studying.domains.Car;
-import studying.domains.PedalEngine;
-import studying.interfaces.ICarFactory;
-import studying.params.PedalEngineParams;
-
-public class PedalCarFactory implements ICarFactory<PedalEngineParams> {
-=======
 /**
  * A factory that creates cars with pedal engines.
  */
@@ -20,7 +12,6 @@ public class PedalCarFactory implements ICarFactory<PedalEngineParams>{
      * @param carNumber the identification number of the car
      * @return the created car with the specified pedal engine and number
      */
->>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/PedalCarFactory.java
     @Override
     public Car createCar(PedalEngineParams carParams, int carNumber) {
         var engine = new PedalEngine(carParams.pedalSize());

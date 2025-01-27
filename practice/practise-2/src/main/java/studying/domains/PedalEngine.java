@@ -1,12 +1,8 @@
-<<<<<<< HEAD:practice/practise-2/src/main/java/studying/domains/PedalEngine.java
-package studying.domains;
-=======
 /**
  * Represents a pedal engine.
  * 
  */
 package studying;
->>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/PedalEngine.java
 
 import lombok.Getter;
 import lombok.ToString;
@@ -19,12 +15,6 @@ import studying.interfaces.IEngine;
 @ToString
 @Getter
 public class PedalEngine implements IEngine {
-<<<<<<< HEAD:practice/practise-2/src/main/java/studying/domains/PedalEngine.java
-=======
-    /**
-     * The size of the pedal engine.
-     */
->>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/PedalEngine.java
     private final int size;
 
     /**

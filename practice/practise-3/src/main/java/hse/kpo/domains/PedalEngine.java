@@ -1,12 +1,8 @@
-<<<<<<< HEAD:practice/practise-3/src/main/java/hse/kpo/domains/PedalEngine.java
-package hse.kpo.domains;
-=======
 /**
  * Represents a pedal engine.
  * 
  */
 package studying;
->>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/PedalEngine.java
 
 import hse.kpo.interfaces.IEngine;
 import lombok.Getter;
@@ -19,16 +15,11 @@ import lombok.ToString;
 @ToString
 @Getter
 public class PedalEngine implements IEngine {
-<<<<<<< HEAD:practice/practise-3/src/main/java/hse/kpo/domains/PedalEngine.java
-=======
     /**
      * The size of the pedal engine.
-     */
->>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/PedalEngine.java
     private final int size;
 
     /**
-     * Checks if the engine is compatible with the customer.
      * 
      * @param customer the customer to check
      * @return true if the customer's leg power is 5 or higher, false otherwise
