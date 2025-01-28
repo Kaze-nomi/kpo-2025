@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
+
 @Component
 <<<<<<< HEAD
 public class CustomerStorage implements ICustomerProvider {
