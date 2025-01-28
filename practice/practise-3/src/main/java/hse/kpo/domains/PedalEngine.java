@@ -1,8 +1,4 @@
-/**
- * Represents a pedal engine.
- * 
- */
-package studying;
+package hse.kpo.domains;
 
 import hse.kpo.interfaces.IEngine;
 import lombok.Getter;
@@ -17,6 +13,8 @@ import lombok.ToString;
 public class PedalEngine implements IEngine {
     /**
      * The size of the pedal engine.
+    */
+    
     private final int size;
 
     /**

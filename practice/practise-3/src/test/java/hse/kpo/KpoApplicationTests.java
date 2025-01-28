@@ -38,7 +38,6 @@ class KpoApplicationTests {
 	@Test
 	@DisplayName("Тест загрузки контекста")
 	void contextLoads() {
-		SpringApplication.run(KpoApplication.class, args);
         
         customerStorage.addCustomer(new Customer("Customer 1", 6, 4, 50));
         customerStorage.addCustomer(new Customer("Customer 2", 4, 6, 200));
@@ -53,10 +52,20 @@ class KpoApplicationTests {
 
 		carService.addCar(handCarFactory, EmptyEngineParams.DEFAULT);
 		carService.addCar(handCarFactory, EmptyEngineParams.DEFAULT);
+		
+		assert customerStorage.getCustomers().get(0).getCar() == null;
+		assert customerStorage.getCustomers().get(1).getCar() == null;
+		assert customerStorage.getCustomers().get(2).getCar() == null;
+		assert customerStorage.getCustomers().get(3).getCar() == null;
 
 		customerStorage.getCustomers().stream().map(Customer::toString).forEach(System.out::println);
 
 		hseCarService.sellCars();
+
+		assert customerStorage.getCustomers().get(0).getCar() != null;
+		assert customerStorage.getCustomers().get(1).getCar() != null;
+		assert customerStorage.getCustomers().get(2).getCar() != null;
+		assert customerStorage.getCustomers().get(3).getCar() == null;
 
 		customerStorage.getCustomers().stream().map(Customer::toString).forEach(System.out::println);
 	}

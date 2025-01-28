@@ -5,6 +5,8 @@ import hse.kpo.domains.Car;
 import hse.kpo.domains.PedalEngine;
 import hse.kpo.interfaces.ICarFactory;
 import hse.kpo.params.PedalEngineParams;
+import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
 
 /**
  * A factory that creates cars with pedal engines.

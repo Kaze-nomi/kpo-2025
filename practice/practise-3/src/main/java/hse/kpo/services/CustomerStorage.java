@@ -6,6 +6,9 @@ import hse.kpo.interfaces.ICustomerProvider;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
+
 @Component
 @RequiredArgsConstructor
 public class CustomerStorage implements ICustomerProvider {

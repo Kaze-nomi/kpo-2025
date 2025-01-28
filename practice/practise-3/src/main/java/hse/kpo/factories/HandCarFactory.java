@@ -4,6 +4,8 @@ import hse.kpo.domains.Car;
 import hse.kpo.domains.HandEngine;
 import hse.kpo.interfaces.ICarFactory;
 import hse.kpo.params.EmptyEngineParams;
+import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor

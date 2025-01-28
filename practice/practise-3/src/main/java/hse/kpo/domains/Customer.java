@@ -16,6 +16,7 @@ public class Customer {
     private final int iq;
     
     @Setter
+    @Getter
     private Car car;
 
     /**

@@ -5,11 +5,12 @@ import hse.kpo.interfaces.ICustomerProvider;
 
 import java.util.Objects;
 
+import org.springframework.stereotype.Component;
+
 /**
  * A service that provides cars to customers.
  */
 @Component
-@RequiredArgsConstructor
 public class HseCarService {
 
     private final ICarProvider carProvider;

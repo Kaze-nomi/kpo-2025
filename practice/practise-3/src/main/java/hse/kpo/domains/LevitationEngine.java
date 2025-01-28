@@ -1,6 +1,7 @@
 package hse.kpo.domains;
 import hse.kpo.interfaces.IEngine;
-import hse.kpo.domains.Customer;
+
+import org.springframework.stereotype.Component;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,8 @@ import lombok.ToString;
  */
 @ToString
 @Getter
+@Component
+@RequiredArgsConstructor
 public class LevitationEngine implements IEngine {
 
     /**

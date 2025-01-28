@@ -4,6 +4,9 @@ import hse.kpo.domains.Car;
 import hse.kpo.domains.LevitationEngine;
 import hse.kpo.interfaces.ICarFactory;
 import hse.kpo.params.EmptyEngineParams;
+
+import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
 /**
  * A class that implements the ICarFactory interface and produces levitation cars
  */
@@ -16,9 +19,10 @@ public class LevitationCarFactory implements ICarFactory<EmptyEngineParams> {
      * @return the created car
      */
     @Override
-    public Car createCar(int carNumber) {
-        var engine = new LevitationEngine(); // Create a levitation engine with no parameters
-        return new Car(carNumber, engine); // Create a car with the levitation engine
+    public Car createCar(EmptyEngineParams carParams, int carNumber) {
+        var engine = new LevitationEngine();
+
+        return new Car(carNumber, engine);
     }
 }
 
