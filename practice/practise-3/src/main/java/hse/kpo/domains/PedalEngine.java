@@ -1,11 +1,7 @@
 <<<<<<< HEAD:practice/practise-3/src/main/java/hse/kpo/domains/PedalEngine.java
 package hse.kpo.domains;
 =======
-/**
- * Represents a pedal engine.
- * 
- */
-package studying;
+package hse.kpo.domains;
 >>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/PedalEngine.java
 
 import hse.kpo.interfaces.IEngine;
@@ -23,8 +19,8 @@ public class PedalEngine implements IEngine {
 =======
     /**
      * The size of the pedal engine.
-     */
->>>>>>> fae1144 (merge):practice/practise-2/src/main/java/studying/PedalEngine.java
+    */
+    
     private final int size;
 
     /**
