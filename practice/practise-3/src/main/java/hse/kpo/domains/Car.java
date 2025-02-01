@@ -27,6 +27,7 @@ public class Car {
     /**
      * Creates a new car with specified VIN and engine.
 <<<<<<< HEAD
+<<<<<<< HEAD
      * @param vin the VIN of the car
      * @param engine the engine of the car
      */
@@ -39,6 +40,13 @@ public class Car {
     public Car(int VIN, IEngine engine) {
         this.VIN = VIN;
 >>>>>>> fa73bc1 (delete)
+=======
+     * @param vin the VIN of the car
+     * @param engine the engine of the car
+     */
+    public Car(int vin, IEngine engine) {
+        this.vin = vin;
+>>>>>>> 72b345e (MeowHomework)
         this.engine = engine;
     }
 
@@ -49,10 +57,14 @@ public class Car {
      */
     public boolean isCompatible(Customer customer) {
 <<<<<<< HEAD
+<<<<<<< HEAD
         return this.engine.isCompatible(customer);
 =======
         return this.engine.isCompatible(customer); // inside the method just call the corresponding method of the engine
 >>>>>>> fa73bc1 (delete)
+=======
+        return this.engine.isCompatible(customer);
+>>>>>>> 72b345e (MeowHomework)
     }
 
 }

@@ -10,6 +10,7 @@ import lombok.ToString;
 @ToString
 public class HandEngine implements IEngine {
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     /**
      * Checks if the engine is compatible with the customer.
@@ -24,8 +25,12 @@ public class HandEngine implements IEngine {
  */
 @ToString
 public class HandEngine implements IEngine {
+=======
+
+>>>>>>> 72b345e (MeowHomework)
     /**
      * Checks if the engine is compatible with the customer.
+     *
      * @param customer the customer to check
      * @return true if the engine is compatible with the customer, false otherwise
      */

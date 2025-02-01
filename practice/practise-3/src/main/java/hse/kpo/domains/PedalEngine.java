@@ -19,13 +19,17 @@ import lombok.ToString;
 /**
  * Represents a pedal engine.
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
  * 
 >>>>>>> fa73bc1 (delete)
+=======
+>>>>>>> 72b345e (MeowHomework)
  */
 @ToString
 @Getter
 public class PedalEngine implements IEngine {
+<<<<<<< HEAD
 <<<<<<< HEAD
 
     /**
@@ -44,15 +48,25 @@ public class PedalEngine implements IEngine {
     */
     
 >>>>>>> 2894323 (really good fixes)
+=======
+
+    /**
+     * The size of the pedal engine.
+     */
+>>>>>>> 72b345e (MeowHomework)
     private final int size;
 
     /**
      * Checks if the engine is compatible with the customer.
 <<<<<<< HEAD
+<<<<<<< HEAD
      *
 =======
      * 
 >>>>>>> fa73bc1 (delete)
+=======
+     *
+>>>>>>> 72b345e (MeowHomework)
      * @param customer the customer to check
      * @return true if the customer's leg power is 5 or higher, false otherwise
      */
@@ -64,10 +78,14 @@ public class PedalEngine implements IEngine {
     /**
      * Creates a pedal engine with the specified size.
 <<<<<<< HEAD
+<<<<<<< HEAD
      *
 =======
      * 
 >>>>>>> fa73bc1 (delete)
+=======
+     *
+>>>>>>> 72b345e (MeowHomework)
      * @param size the size of the pedal engine
      */
     public PedalEngine(int size) {
