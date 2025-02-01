@@ -11,10 +11,13 @@ import lombok.ToString;
 @ToString
 public class Customer {
     private final String name;
+    @Getter
     private final int legPower;
+    @Getter
     private final int handPower;
+    @Getter
     private final int iq;
-    
+
     @Setter
     @Getter
     private Car car;
