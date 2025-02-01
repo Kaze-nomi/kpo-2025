@@ -6,19 +6,19 @@ import lombok.ToString;
 
 /**
  * Represents a pedal engine.
- * 
  */
 @ToString
 @Getter
 public class PedalEngine implements IEngine {
+
     /**
      * The size of the pedal engine.
-    */
-    
+     */
     private final int size;
 
     /**
-     * 
+     * Checks if the engine is compatible with the customer.
+     *
      * @param customer the customer to check
      * @return true if the customer's leg power is 5 or higher, false otherwise
      */
@@ -29,7 +29,7 @@ public class PedalEngine implements IEngine {
 
     /**
      * Creates a pedal engine with the specified size.
-     * 
+     *
      * @param size the size of the pedal engine
      */
     public PedalEngine(int size) {

@@ -8,8 +8,10 @@ import lombok.ToString;
  */
 @ToString
 public class HandEngine implements IEngine {
+
     /**
      * Checks if the engine is compatible with the customer.
+     *
      * @param customer the customer to check
      * @return true if the engine is compatible with the customer, false otherwise
      */

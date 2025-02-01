@@ -5,6 +5,8 @@ import hse.kpo.domains.Customer;
 import hse.kpo.interfaces.ICarFactory;
 import hse.kpo.interfaces.ICarProvider;
 import org.springframework.stereotype.Component;
+
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ public class CarService implements ICarProvider {
     /**
      * A list of available cars.
      */
+    @Getter
     private final List<Car> cars = new ArrayList<>();
 
     /**

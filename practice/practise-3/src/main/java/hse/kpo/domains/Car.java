@@ -2,6 +2,7 @@ package hse.kpo.domains;
 
 import hse.kpo.interfaces.IEngine;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -10,6 +11,7 @@ import lombok.ToString;
  * </p>
  */
 @ToString
+@RequiredArgsConstructor
 public class Car {
 
     @Getter
@@ -20,15 +22,15 @@ public class Car {
      * @return the VIN of the car
      */
     @Getter
-    private int VIN;
+    private int vin;
 
     /**
      * Creates a new car with specified VIN and engine.
-     * @param VIN the VIN of the car
+     * @param vin the VIN of the car
      * @param engine the engine of the car
      */
-    public Car(int VIN, IEngine engine) {
-        this.VIN = VIN;
+    public Car(int vin, IEngine engine) {
+        this.vin = vin;
         this.engine = engine;
     }
 
@@ -38,7 +40,8 @@ public class Car {
      * @return true if the car is compatible with the customer, false otherwise
      */
     public boolean isCompatible(Customer customer) {
-        return this.engine.isCompatible(customer); // inside the method just call the corresponding method of the engine
+        return this.engine.isCompatible(customer);
     }
+
 }
 
