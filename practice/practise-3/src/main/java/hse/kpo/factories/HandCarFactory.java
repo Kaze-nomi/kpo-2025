@@ -5,10 +5,8 @@ import hse.kpo.domains.HandEngine;
 import hse.kpo.interfaces.ICarFactory;
 import hse.kpo.params.EmptyEngineParams;
 import org.springframework.stereotype.Component;
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class HandCarFactory implements ICarFactory<EmptyEngineParams> {
 
     /**
