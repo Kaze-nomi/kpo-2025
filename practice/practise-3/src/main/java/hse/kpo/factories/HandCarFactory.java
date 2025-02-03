@@ -6,9 +6,8 @@ import hse.kpo.interfaces.ICarFactory;
 import hse.kpo.params.EmptyEngineParams;
 import org.springframework.stereotype.Component;
 
-
 @Component
-public class HandCarFactory implements ICarFactory {
+public class HandCarFactory implements ICarFactory<EmptyEngineParams> {
     @Override
     public Car createCar(EmptyEngineParams carParams, int carNumber) {
         var engine = new HandEngine(); // Creates a manual engine with no parameters
