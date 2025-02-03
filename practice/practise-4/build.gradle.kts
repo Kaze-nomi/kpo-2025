@@ -22,12 +22,12 @@ java {
 	}
 }
 
-jacocoTestReport {
-    reports {
-        xml.required = false
-        csv.required = false
-        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
-    }
+tasks.test { 
+	finalizedBy(tasks.jacocoTestReport) 
+}
+
+tasks.jacocoTestReport { 
+	dependsOn(tasks.test)
 }
 
 configurations {

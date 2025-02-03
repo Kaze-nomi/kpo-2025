@@ -12,7 +12,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-class KpoFactoriesTest_3 {
+class KpoFactoriesTest_2 {
 	@Test
 	@DisplayName("Тест добавления машины с использованием spy-объекта")
 	void testAddCarWithSpy() {

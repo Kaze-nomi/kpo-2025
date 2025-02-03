@@ -19,14 +19,6 @@ public class CarService implements ICarProvider {
     /**
      * A list of available cars.
      */
-<<<<<<< HEAD
-<<<<<<< HEAD
-    @Getter
-=======
->>>>>>> fa73bc1 (delete)
-=======
-    @Getter
->>>>>>> 72b345e (MeowHomework)
     private final List<Car> cars = new ArrayList<>();
 
     /**

@@ -19,7 +19,7 @@ class KpoServicesTest_2 {
 	@DisplayName("Тест продажи машин с использованием mock-объекта")
 	void testSellCarsWithMock() {
 		CarService carServiceMock = mock(CarService.class);
-		when(carServiceMock.takeCar(any(Customer.class))).thenReturn(new Car());
+		when(carServiceMock.takeCar(any(Customer.class))).thenReturn(new Car(0, null));
 
 		// Создаем реальный CustomerStorage
 		CustomerStorage customerStorage = new CustomerStorage();
