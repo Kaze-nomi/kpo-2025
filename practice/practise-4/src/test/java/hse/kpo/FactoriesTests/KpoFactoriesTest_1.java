@@ -45,26 +45,4 @@ class KpoFactoriesTest_1 {
 
 		assertTrue(levitationCar.getEngine() instanceof LevitationEngine);
 	}
-
-	@Test
-	@DisplayName("Тест на проверку продажи машины покупателю с несоответствующими для машины параметрами")
-	void testSellCarToStupidCustomer() {
-		// Создаем реальный CarService
-		CarService carService = new CarService();
-	
-		// Создаем реальный CustomerStorage
-		CustomerStorage customerStorage = new CustomerStorage();
-		customerStorage.addCustomer(new Customer("John", 6, 4, 50));
-
-		carService.addCar(levitationCarFactory, EmptyEngineParams.DEFAULT);
-	
-		// Создаем HseCarService
-		HseCarService hseCarService = new HseCarService(carService, customerStorage);
-
-		// Вызываем метод sellCars
-		hseCarService.sellCars();
-	
-		// Проверяем, что машина у покупателя не появилась
-		assertNull(customerStorage.getCustomers().get(0).getCar());
-	}
 }

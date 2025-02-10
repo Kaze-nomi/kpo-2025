@@ -39,5 +39,5 @@ void testSellCarToStupidCustomer() {
 
     // Проверяем, что машина у покупателя не появилась
     assertNull(customerStorage.getCustomers().get(0).getCar());
-}
+    }
 }
