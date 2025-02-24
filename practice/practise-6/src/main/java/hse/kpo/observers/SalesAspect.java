@@ -20,7 +20,7 @@ private final ISalesObserver salesObserver;
 
         salesObserver.checkCustomers();
 
-        String operationName = sales.value().isEmpty() ? pjp.getSignature().toShortString() : sales.value();
+        //String operationName = sales.value().isEmpty() ? pjp.getSignature().toLongString() : sales.value();
         try {
             Object result = pjp.proceed();
             salesObserver.checkCustomers();

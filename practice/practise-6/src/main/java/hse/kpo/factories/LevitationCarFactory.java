@@ -25,5 +25,3 @@ public class LevitationCarFactory implements ICarFactory<EmptyEngineParams> {
         return new Car(carNumber, engine);
     }
 }
-
-
