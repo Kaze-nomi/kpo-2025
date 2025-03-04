@@ -1,0 +1,23 @@
+<Transport>
+<Vehicle>
+    <VIN>3</VIN>
+    <Type>Car</Type>
+    <Engine>
+        <Type>HandEngine()</Type>
+    </Engine>
+</Vehicle>
+<Vehicle>
+    <VIN>10005</VIN>
+    <Type>Car</Type>
+    <Engine>
+        <Type>LevitationEngine()</Type>
+    </Engine>
+</Vehicle>
+<Vehicle>
+    <VIN>4</VIN>
+    <Type>Ship</Type>
+    <Engine>
+        <Type>HandEngine()</Type>
+    </Engine>
+</Vehicle>
+</Transport>

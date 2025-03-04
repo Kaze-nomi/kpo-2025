@@ -1,12 +1,13 @@
 package hse.kpo.services;
 
-import hse.kpo.domains.Car;
-import hse.kpo.domains.Customer;
-import hse.kpo.domains.Ship;
-import hse.kpo.factories.ShipWithWheelsFactory;
-import hse.kpo.interfaces.ICarFactory;
-import hse.kpo.interfaces.ICarProvider;
+import hse.kpo.domains.cars.Car;
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.domains.ships.Ship;
+import hse.kpo.factories.carFactories.ShipWithWheelsFactory;
+import hse.kpo.interfaces.factoryInterfaces.ICarFactory;
+import hse.kpo.interfaces.providerInterfaces.ICarProvider;
 import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
 
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import java.util.List;
 @Slf4j
 public class CarService implements ICarProvider {
 
+    @Getter
     private final List<Car> cars = new ArrayList<>();
 
     private int carNumberCounter = 0;
