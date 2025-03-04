@@ -1,10 +1,11 @@
 package hse.kpo.services;
 
-import hse.kpo.domains.Ship;
-import hse.kpo.domains.Customer;
-import hse.kpo.interfaces.IShipFactory;
-import hse.kpo.interfaces.IShipProvider;
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.domains.ships.Ship;
+import hse.kpo.interfaces.factoryInterfaces.IShipFactory;
+import hse.kpo.interfaces.providerInterfaces.IShipProvider;
 import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
 
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.List;
 @Slf4j
 public class ShipService implements IShipProvider {
 
+    @Getter
     private final List<Ship> ships = new ArrayList<>();
 
     private int shipNumberCounter = 0;

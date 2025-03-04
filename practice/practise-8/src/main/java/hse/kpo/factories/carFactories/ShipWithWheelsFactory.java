@@ -1,7 +1,7 @@
-package hse.kpo.factories;
+package hse.kpo.factories.carFactories;
 
-import hse.kpo.domains.ShipWithWheels;
-import hse.kpo.domains.Ship;
+import hse.kpo.domains.cars.ShipWithWheels;
+import hse.kpo.domains.ships.Ship;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
