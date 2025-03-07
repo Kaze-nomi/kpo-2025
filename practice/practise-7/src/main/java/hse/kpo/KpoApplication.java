@@ -15,10 +15,10 @@ public class KpoApplication {
 
 		HSE hse = context.getBean(HSE.class);
 		
-		hse.addCustomer("Иван", 100, 100, 100);
-		hse.addCustomer("Вася", 100, 100, 100);
-		hse.addCustomer("Петя", 100, 100, 100);
-		hse.addCustomer("Глеб", 100, 100, 100);
+		hse.addCustomer("Иван", 100, 100, 555);
+		hse.addCustomer("Вася", 100, 100, 555);
+		hse.addCustomer("Петя", 100, 100, 555);
+		hse.addCustomer("Глеб", 100, 100, 555);
 
 		hse.addPedalCar(10);
 		hse.addHandCar();
@@ -26,7 +26,7 @@ public class KpoApplication {
 		hse.addPedalShip(10);
 		hse.addHandShip();
 
-		hse.addShipWithWheels(10);
+		hse.addShipWithWheels();
 
 		hse.sellCars();
 		hse.sellShips();
