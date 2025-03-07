@@ -34,6 +34,28 @@ public class KpoApplication {
 		hse.sellCars();
 		hse.sellShips();
 
+		hse.addHandCar();
+		hse.addHandShip();
+		hse.addPedalCar(10);
+		hse.addShipWithWheels();
+
+		try (FileWriter fileWriter = new FileWriter("./reports/transport.xml")) {
+			hse.exportTransport(ReportFormat.XML, fileWriter);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		try (FileWriter fileWriter = new FileWriter("./reports/transport.csv")) {
+			hse.exportTransport(ReportFormat.CSV, fileWriter);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+		
+		hse.addTransportFromReport(ReportFormat.XML);
+
+		hse.sellCars();
+		hse.sellShips();
+
 		try (FileWriter fileWriter = new FileWriter("./reports/report.MD")) {
 			hse.exportReport(ReportFormat.MARKDOWN, fileWriter);
 		} catch (IOException e) {
@@ -45,21 +67,5 @@ public class KpoApplication {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		hse.addHandCar();
-		hse.addHandShip();
-		hse.addShipWithWheels();
-
-		try (FileWriter fileWriter = new FileWriter("./reports/transports.xml")) {
-			hse.exportTransports(ReportFormat.XML, fileWriter);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		try (FileWriter fileWriter = new FileWriter("./reports/transports.csv")) {
-			hse.exportTransports(ReportFormat.CSV, fileWriter);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}			
 	}
 }

@@ -7,6 +7,13 @@
     </Engine>
 </Vehicle>
 <Vehicle>
+    <VIN>4</VIN>
+    <Type>Car</Type>
+    <Engine>
+        <Type>PedalEngine(size=10)</Type>
+    </Engine>
+</Vehicle>
+<Vehicle>
     <VIN>10005</VIN>
     <Type>Car</Type>
     <Engine>
