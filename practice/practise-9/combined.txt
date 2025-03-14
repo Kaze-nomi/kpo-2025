@@ -1,0 +1,1784 @@
+package hse.kpo;
+
+import hse.kpo.facade.HSE;
+import hse.kpo.params.ReportFormat;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@Slf4j
+@SpringBootApplication
+public class KpoApplication {
+	public static void main(String[] args) {
+		var context = SpringApplication.run(KpoApplication.class, args);
+
+		HSE hse = context.getBean(HSE.class);
+
+		// hse.addCustomer("Иван", 100, 100, 555);
+		// hse.addCustomer("Вася", 100, 100, 555);
+		// hse.addCustomer("Петя", 100, 100, 555);
+		// hse.addCustomer("Глеб", 100, 100, 555);
+
+		hse.addPedalCar(10);
+		hse.addHandCar();
+
+		hse.addPedalShip(10);
+		hse.addHandShip();
+
+		hse.addShipWithWheels();
+
+		// hse.sellCars();
+		// hse.sellShips();
+
+		// hse.addHandCar();
+		// hse.addHandShip();
+		// hse.addPedalCar(10);
+		// hse.addShipWithWheels();
+
+		// try (FileWriter fileWriter = new FileWriter("./reports/transport.xml")) {
+		// 	hse.exportTransport(ReportFormat.XML, fileWriter);
+		// } catch (IOException e) {
+		// 	e.printStackTrace();
+		// }
+
+		// try (FileWriter fileWriter = new FileWriter("./reports/transport.csv")) {
+		// 	hse.exportTransport(ReportFormat.CSV, fileWriter);
+		// } catch (IOException e) {
+		// 	e.printStackTrace();
+		// }		
+		
+		// hse.addTransportFromReport(ReportFormat.XML);
+
+		// hse.sellCars();
+		// hse.sellShips();
+
+		// try (FileWriter fileWriter = new FileWriter("./reports/report.MD")) {
+		// 	hse.exportReport(ReportFormat.MARKDOWN, fileWriter);
+		// } catch (IOException e) {
+		// 	e.printStackTrace();
+		// }
+
+		// try (FileWriter fileWriter = new FileWriter("./reports/report.json")) {
+		// 	hse.exportReport(ReportFormat.JSON, fileWriter);
+		// } catch (IOException e) {
+		// 	e.printStackTrace();
+		// }
+	}
+}package hse.kpo.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+
+@Configuration
+public class SwaggerConfig {
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("HSE Car Service API")
+                        .version("1.0")
+                        .description("API для управления автомобилями"));
+    }
+}package hse.kpo.builders;
+
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import hse.kpo.domains.customers.Customer;
+
+public class ReportBuilder {
+    private StringBuilder content;
+
+    public ReportBuilder() {
+        this.content = new StringBuilder();
+    }
+
+    public ReportBuilder addCustomers(List<Customer> customers) {
+        content.append("Покупатели:");
+        customers.forEach(customer -> content.append(String.format(" - %s", customer)));
+        content.append("\n");
+
+        return this;
+    }
+
+    public ReportBuilder addOperation(String operation) {
+        content.append(String.format("Операция: %s", operation));
+        content.append(System.lineSeparator());
+        return this;
+    }
+
+    public Report build() {
+        return new Report(String.format("Отчет за %s", ZonedDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"))),
+                content.toString());
+    }
+}package hse.kpo.builders;
+
+public record Report(String title, String content) {
+
+    @Override
+    public String toString() {
+        return String.format("%s\n\n%s", title, content);
+    }
+}package hse.kpo.domains.engines;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.interfaces.engineInterfaces.IEngine;
+import hse.kpo.params.ProductionTypes;
+import lombok.ToString;
+
+@ToString
+public class HandEngine implements IEngine {
+    @Override
+    public boolean isCompatible(Customer customer, ProductionTypes type) {
+        return switch (type) {
+            case ProductionTypes.CAR -> customer.getHandPower() > 5;
+            case ProductionTypes.CATAMARAN -> customer.getHandPower() > 2;
+            case null, default -> throw new RuntimeException("This type of production doesn't exist");
+        };
+    }
+}
+
+package hse.kpo.domains.engines;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.interfaces.engineInterfaces.IEngine;
+import hse.kpo.params.ProductionTypes;
+
+import lombok.Getter;
+import lombok.ToString;
+
+@ToString
+@Getter
+public class PedalEngine implements IEngine {
+    private final int size;
+
+    @Override
+    public boolean isCompatible(Customer customer, ProductionTypes type) {
+        return switch (type) {
+            case ProductionTypes.CAR -> customer.getLegPower() > 5;
+            case ProductionTypes.CATAMARAN -> customer.getLegPower() > 2;
+            case null, default -> throw new RuntimeException("This type of production doesn't exist");
+        };
+    }
+
+    public PedalEngine(int size) {
+        this.size = size;
+    }
+}
+package hse.kpo.domains.engines;
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.interfaces.engineInterfaces.IEngine;
+import hse.kpo.params.ProductionTypes;
+
+import org.springframework.stereotype.Component;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+
+/**
+ * Represents a levitation engine.
+ */
+@ToString
+@Getter
+@Component
+@RequiredArgsConstructor
+public class LevitationEngine implements IEngine {
+
+    /**
+     * Checks if the engine is compatible with the customer.
+     * 
+     * @param customer the customer to check
+     * @return true if the customer's IQ is 300 or higher, false otherwise
+     */
+    @Override
+    public boolean isCompatible(Customer customer, ProductionTypes type) {
+        return switch (type) {
+            case ProductionTypes.CAR -> customer.getIq() >= 300;
+            case ProductionTypes.CATAMARAN -> customer.getIq() >= 200;
+            case null, default -> throw new RuntimeException("This type of production doesn't exist");
+        };
+    }
+}
+
+
+package hse.kpo.domains.ships;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.interfaces.domainInterfaces.ITransport;
+import hse.kpo.interfaces.engineInterfaces.IEngine;
+import hse.kpo.params.ProductionTypes;
+
+import lombok.Getter;
+import lombok.ToString;
+
+@ToString
+public class Ship implements ITransport {
+
+    @Getter
+    private IEngine engine;
+
+    @Getter
+    private int VIN;
+
+    @Override
+    public String getTransportType() {
+        return "Ship";
+    }
+
+    @Override
+    public String getEngineType() {
+        return engine.toString();
+    }
+
+    @Override
+    public int getID() {
+        return VIN;
+    }
+
+    public Ship(int VIN, IEngine engine) {
+        this.VIN = VIN;
+        this.engine = engine;
+    }
+
+    @Override
+    public boolean isCompatible(Customer customer) {
+        return this.engine.isCompatible(customer, ProductionTypes.CATAMARAN); // внутри метода просто вызываем соответствующий метод двигателя
+    }
+}package hse.kpo.domains.cars;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.interfaces.engineInterfaces.IEngine;
+import hse.kpo.params.ProductionTypes;
+
+public class ShipWithWheels extends Car {
+
+    @Override
+    public String toString() {
+        return String.format("ShipWithWheels(VIN=%d, Engine=%s)", this.getVIN(), this.getEngine().toString());
+    }
+
+
+    public ShipWithWheels(int VIN, IEngine engine) {
+        super(VIN, engine);
+    }
+
+    @Override
+    public boolean isCompatible(Customer customer) {
+        return this.getEngine().isCompatible(customer, ProductionTypes.CATAMARAN);
+    }
+}package hse.kpo.domains.cars;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.interfaces.domainInterfaces.ITransport;
+import hse.kpo.interfaces.engineInterfaces.IEngine;
+import hse.kpo.params.ProductionTypes;
+import lombok.Getter;
+import lombok.ToString;
+
+@ToString
+public class Car implements ITransport {
+    @Getter
+    private IEngine engine;
+    
+    @Getter
+    private int VIN;
+
+    @Override
+    public String getTransportType() {
+        return "Car";
+    }
+
+    @Override
+    public String getEngineType() {
+        return engine.toString();
+    }
+
+    @Override
+    public int getID() {
+        return VIN;
+    }
+
+    public Car(int VIN, IEngine engine) {
+        this.VIN = VIN;
+        this.engine = engine;
+    }
+
+    @Override
+    public boolean isCompatible(Customer customer) {
+        return this.engine.isCompatible(customer, ProductionTypes.CAR); // внутри метода просто вызываем соответствующий метод двигателя
+    }
+}
+package hse.kpo.domains.customers;
+
+import hse.kpo.domains.cars.Car;
+import hse.kpo.domains.ships.Ship;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@ToString
+public class Customer {
+    @Getter
+    private final String name;
+
+    @Getter
+    private final int legPower;
+
+    @Getter
+    private final int handPower;
+
+    @Getter
+    private final int iq;
+
+    @Setter
+    private Car car;
+
+    @Setter
+    private Ship ship;
+
+    public Customer(String name, int legPower, int handPower, int iq) {
+        this.name = name;
+        this.legPower = legPower;
+        this.handPower = handPower;
+        this.iq = iq;
+    }
+}
+package hse.kpo.params;
+
+import java.util.Arrays;
+import java.util.Optional;
+
+public enum EngineTypes {
+    HAND ("HAND"),
+    PEDAL ("PEDAL"),
+    LEVITATION ("LEVITATION");
+    
+        private final String name;
+    
+        EngineTypes(String name) {
+            this.name = name;
+        }
+    
+        public static Optional<EngineTypes> find(String name) {
+            return Arrays.stream(values()).filter(type -> type.name.equals(name)).findFirst();
+        }
+    }package hse.kpo.params;
+
+public record PedalEngineParams(int pedalSize) {
+}
+package hse.kpo.params;
+
+public enum ProductionTypes {
+    CAR,
+    CATAMARAN
+}package hse.kpo.params;
+
+public enum ReportFormat {
+    JSON,
+    MARKDOWN,
+    XML,
+    CSV
+}package hse.kpo.params;
+
+public record EmptyEngineParams() {
+    public static final EmptyEngineParams DEFAULT = new EmptyEngineParams();
+}package hse.kpo.services;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.params.ProductionTypes;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import hse.kpo.observers.Sales;
+import hse.kpo.interfaces.observerInterfaces.ISalesObserver;
+import hse.kpo.interfaces.providerInterfaces.ICarProvider;
+import hse.kpo.interfaces.providerInterfaces.ICustomerProvider;
+import hse.kpo.interfaces.providerInterfaces.IShipProvider;
+
+import org.springframework.stereotype.Component;
+
+import java.util.Objects;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class HseService {
+
+    final List<ISalesObserver> observers = new ArrayList<>();
+
+    @Getter
+    private final ICarProvider carProvider;
+
+    @Getter
+    private final IShipProvider shipProvider;
+
+    @Getter
+    private final ICustomerProvider customerProvider;
+
+    @Sales
+    public void sellCars() {
+        // получаем список покупателей
+        var customers = customerProvider.getCustomers();
+        // пробегаемся по полученному списку
+        customers.stream().filter(customer -> Objects.isNull(customer.getCar()))
+                .forEach(customer -> {
+                    var car = carProvider.takeCar(customer);
+                    if (Objects.nonNull(car)) {
+                        customer.setCar(car);
+                        notifyObserversForSale(customer, ProductionTypes.CAR, car.getVIN());
+                    }
+                    else {
+                        log.warn("Car not found for customer {}", customer.getName());
+                    }
+                });
+    }
+
+
+    @Sales
+    public void sellCar(int vin) {
+        // получаем список покупателей
+        var customers = customerProvider.getCustomers();
+        // пробегаемся по полученному списку
+        customers.stream().filter(customer -> Objects.isNull(customer.getCar()))
+                .filter(customer -> carProvider.getCars().stream()
+                        .anyMatch(car -> car.getID() == vin))
+                .forEach(customer -> {
+                    var car = carProvider.takeCar(customer);
+                    if (Objects.nonNull(car)) {
+                        customer.setCar(car);
+                        notifyObserversForSale(customer, ProductionTypes.CAR, vin);
+                    }
+                    else {
+                        log.warn("Car with vin {} not found for customer {}", vin, customer.getName());
+                    }
+                });
+    }
+
+    @Sales
+    public void sellShips() {
+        // получаем список покупателей
+        var customers = customerProvider.getCustomers();
+        // пробегаемся по полученному списку
+        customers.stream().filter(customer -> Objects.isNull(customer.getShip()))
+                .forEach(customer -> {
+                    var ship = shipProvider.takeShip(customer);
+                    if (Objects.nonNull(ship)) {
+                        customer.setShip(ship);
+                        notifyObserversForSale(customer, ProductionTypes.CATAMARAN, ship.getVIN());
+                    } 
+                    else {
+                        log.warn("Ship not found for customer {}", customer.getName());
+                    }
+                });
+    }
+
+    public void addObserver(ISalesObserver observer) {
+        observers.add(observer);
+    }
+
+    private void notifyObserversForSale(Customer customer, ProductionTypes productType, int vin) {
+        observers.forEach(obs -> obs.onSale(customer, productType, vin));
+    }
+
+}package hse.kpo.services;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.domains.ships.Ship;
+import hse.kpo.interfaces.factoryInterfaces.IShipFactory;
+import hse.kpo.interfaces.providerInterfaces.IShipProvider;
+import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
+
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Component
+@Slf4j
+public class ShipService implements IShipProvider {
+
+    @Getter
+    private final List<Ship> ships = new ArrayList<>();
+
+    private int shipNumberCounter = 0;
+
+    @Override
+    public Ship takeShip(Customer customer) {
+        
+
+        var filteredShips = ships.stream().filter(ship -> ship.isCompatible(customer)).toList();
+
+        var firstShip = filteredShips.stream().findFirst();
+
+        firstShip.ifPresent(ships::remove);
+
+        return firstShip.orElse(null);
+    }
+
+    @Override
+    public <TParams> Ship addShip(IShipFactory<TParams> shipFactory, TParams shipParams)
+    {
+        // создаем корабль из переданной фабрики
+        var ship = shipFactory.createShip(
+                shipParams, // передаем параметры
+                ++shipNumberCounter // передаем номер - номер будет начинаться с 1
+        );
+        
+        if (ship == null) {
+            log.error("Failed to create ship");
+            return ship;
+        } 
+
+        ships.add(ship); // добавляем корабль
+        return ship;
+    }
+
+    @Override
+    public void deleteShip(int VIN) {
+        ships.removeIf(ship -> ship.getVIN() == VIN);
+    }
+}package hse.kpo.services;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.interfaces.providerInterfaces.ICustomerProvider;
+
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Component
+public class CustomerStorage implements ICustomerProvider {
+    private final List<Customer> customers = new ArrayList<>();
+
+    @Override
+    public List<Customer> getCustomers() {
+        return customers;
+    }
+
+    @Override
+    public void addCustomer(Customer customer)
+    {
+        customers.add(customer); // просто добавляем покупателя в список
+    }
+}
+package hse.kpo.services;
+
+import hse.kpo.domains.cars.Car;
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.domains.ships.Ship;
+import hse.kpo.factories.carFactories.ShipWithWheelsFactory;
+import hse.kpo.interfaces.factoryInterfaces.ICarFactory;
+import hse.kpo.interfaces.providerInterfaces.ICarProvider;
+import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
+
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Component
+@Slf4j
+public class CarService implements ICarProvider {
+
+    @Getter
+    private final List<Car> cars = new ArrayList<>();
+
+    private int carNumberCounter = 0;
+
+    @Override
+    public Car takeCar(Customer customer) {
+        
+
+        var filteredCars = cars.stream().filter(car -> car.isCompatible(customer)).toList();
+
+        var firstCar = filteredCars.stream().findFirst();
+
+        firstCar.ifPresent(cars::remove);
+
+        return firstCar.orElse(null);
+    }
+
+    @Override
+    public <TParams> Car addCar(ICarFactory<TParams> carFactory, TParams carParams)
+    {
+        // создаем автомобиль из переданной фабрики
+        var car = carFactory.createCar(
+                carParams, // передаем параметры
+                ++carNumberCounter // передаем номер - номер будет начинаться с 1
+        );
+
+        if (car == null) {
+            log.error("Failed to create car");
+            return car;
+        }
+
+        cars.add(car); // добавляем автомобиль
+        return car;
+    }
+
+    @Override
+    public Car addExistingCar(Car car) 
+    {
+        if (car == null) {
+            log.error("Failed to create car");
+            return car;
+        }
+
+        cars.add(car);
+        return car;
+    }
+
+    public Car addShipWithWheels(ShipWithWheelsFactory shipWithWheelsFactory, Ship ship) {
+
+        var shipWithWheels = shipWithWheelsFactory.createShipWithWheels(ship);
+        if (shipWithWheels == null) {
+            log.error("Failed to create car");
+            return shipWithWheels;
+        }
+        cars.add(shipWithWheels);
+        return shipWithWheels;
+    }
+}
+package hse.kpo.observers;
+
+import hse.kpo.params.ProductionTypes;
+import hse.kpo.builders.Report;
+import hse.kpo.builders.ReportBuilder;
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.interfaces.observerInterfaces.ISalesObserver;
+import hse.kpo.services.CustomerStorage;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class ReportSalesObserver implements ISalesObserver {
+private final CustomerStorage customerStorage;
+
+    private final ReportBuilder reportBuilder = new ReportBuilder();
+
+    public Report buildReport() {
+        return reportBuilder.build();
+    }
+
+    public void checkCustomers() {
+        reportBuilder.addCustomers(customerStorage.getCustomers());
+    }
+
+    @Override
+    public void onSale(Customer customer, ProductionTypes productType, int vin) {
+        String message = String.format(
+                "Продажа: %s VIN-%d клиенту %s (Сила рук: %d, Сила ног: %d, IQ: %d)",
+                productType, vin, customer.getName(),
+                customer.getHandPower(), customer.getLegPower(), customer.getIq()
+        );
+        reportBuilder.addOperation(message);
+    }
+}package hse.kpo.observers;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Sales {
+    String value() default "";
+}package hse.kpo.observers;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
+
+import hse.kpo.interfaces.observerInterfaces.ISalesObserver;
+import lombok.RequiredArgsConstructor;
+
+@Component
+@Aspect
+@RequiredArgsConstructor
+public class SalesAspect {
+private final ISalesObserver salesObserver;
+
+    @Around("@annotation(sales)")
+    public Object sales(ProceedingJoinPoint pjp, Sales sales) throws Throwable {
+
+        salesObserver.checkCustomers();
+
+        //String operationName = sales.value().isEmpty() ? pjp.getSignature().toLongString() : sales.value();
+        try {
+            Object result = pjp.proceed();
+            salesObserver.checkCustomers();
+            return result;
+        } catch (Throwable e) {
+            throw e;
+        }
+    }
+}package hse.kpo.factories.exportFactories;
+
+import hse.kpo.params.ReportFormat;
+import hse.kpo.exporters.JsonReportExporter;
+import hse.kpo.exporters.MarkdownReportExporter;
+import hse.kpo.exporters.XMLReportExporter;
+import hse.kpo.exporters.CSVReportExporter;
+import hse.kpo.interfaces.exporterInterfaces.IReportExporter;
+import hse.kpo.interfaces.exporterInterfaces.ITransportExporter;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class ReportExporterFactory {
+    public IReportExporter createReport(ReportFormat format) {
+        return switch (format) {
+            case JSON -> new JsonReportExporter();
+            case MARKDOWN -> new MarkdownReportExporter();
+            default -> throw new IllegalArgumentException("Unsupported format: " + format);
+        };
+    }
+
+    public ITransportExporter createTransoport(ReportFormat format) {
+        return switch (format) {
+            case XML -> new XMLReportExporter();
+            case CSV -> new CSVReportExporter();
+            default -> throw new IllegalArgumentException("Unsupported format: " + format);
+        };
+    }
+}
+package hse.kpo.factories.shipFactories;
+
+import hse.kpo.domains.engines.LevitationEngine;
+import hse.kpo.domains.ships.Ship;
+import hse.kpo.interfaces.factoryInterfaces.IShipFactory;
+import hse.kpo.params.EmptyEngineParams;
+
+import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * A class that implements the IShipFactory interface and produces levitation ships
+ */
+@Component
+@RequiredArgsConstructor
+public class LevitationShipFactory implements IShipFactory<EmptyEngineParams> {
+    /**
+     * A method that creates a ship
+     * @param shipNumber the number of the ship
+     * @return the created ship
+     */
+    @Override
+    public Ship createShip(EmptyEngineParams shipParams, int shipNumber) {
+        var engine = new LevitationEngine();
+
+        return new Ship(shipNumber, engine);
+    }
+}package hse.kpo.factories.shipFactories;
+
+
+import hse.kpo.domains.engines.PedalEngine;
+import hse.kpo.domains.ships.Ship;
+import hse.kpo.interfaces.factoryInterfaces.IShipFactory;
+import hse.kpo.params.PedalEngineParams;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.stereotype.Component;
+
+@Component
+@Slf4j
+public class PedalShipFactory implements IShipFactory<PedalEngineParams> {
+    @Override
+    public Ship createShip(PedalEngineParams shipParams, int shipNumber) {
+        if (shipParams.pedalSize() <= 0) {
+            log.error("Pedal size must be greater than 0");
+            return null;
+        }
+        var engine = new PedalEngine(shipParams.pedalSize()); // создаем двигатель на основе переданных параметров
+
+        return new Ship(shipNumber, engine); // возвращаем собранный корабль с установленным двигателем и определенным номером
+    }
+}
+package hse.kpo.factories.shipFactories;
+
+import hse.kpo.domains.engines.HandEngine;
+import hse.kpo.domains.ships.Ship;
+import hse.kpo.interfaces.factoryInterfaces.IShipFactory;
+import hse.kpo.params.EmptyEngineParams;
+import org.springframework.stereotype.Component;
+
+@Component
+public class HandShipFactory implements IShipFactory<EmptyEngineParams> {
+    @Override
+    public Ship createShip(EmptyEngineParams shipParams, int shipNumber) {
+        var engine = new HandEngine(); // Создаем двигатель без каких-либо параметров
+
+        return new Ship(shipNumber, engine); // создаем корабль с ручным приводом
+    }
+}package hse.kpo.factories.carFactories;
+
+import hse.kpo.domains.cars.Car;
+import hse.kpo.domains.engines.HandEngine;
+import hse.kpo.interfaces.factoryInterfaces.ICarFactory;
+import hse.kpo.params.EmptyEngineParams;
+import org.springframework.stereotype.Component;
+
+@Component
+public class HandCarFactory implements ICarFactory<EmptyEngineParams> {
+    @Override
+    public Car createCar(EmptyEngineParams carParams, int carNumber) {
+        var engine = new HandEngine(); // Создаем двигатель без каких-либо параметров
+
+        return new Car(carNumber, engine); // создаем автомобиль с ручным приводом
+    }
+}
+package hse.kpo.factories.carFactories;
+
+import hse.kpo.domains.cars.ShipWithWheels;
+import hse.kpo.domains.ships.Ship;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.stereotype.Component;
+
+@Component
+@Slf4j
+public class ShipWithWheelsFactory {
+    public ShipWithWheels createShipWithWheels(Ship ship) {
+        return new ShipWithWheels(ship.getVIN() + 10000, ship.getEngine());
+    }
+}
+package hse.kpo.factories.carFactories;
+
+
+import hse.kpo.domains.cars.Car;
+import hse.kpo.domains.engines.PedalEngine;
+import hse.kpo.interfaces.factoryInterfaces.ICarFactory;
+import hse.kpo.params.PedalEngineParams;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.stereotype.Component;
+
+@Component
+@Slf4j
+public class PedalCarFactory implements ICarFactory<PedalEngineParams> {
+    @Override
+    public Car createCar(PedalEngineParams carParams, int carNumber) {
+        if (carParams.pedalSize() <= 0) {
+            log.error("Pedal size must be greater than 0");
+            return null;
+        }
+        var engine = new PedalEngine(carParams.pedalSize()); // создаем двигатель на основе переданных параметров
+
+        return new Car(carNumber, engine); // возвращаем собранный автомобиль с установленным двигателем и определенным номером
+    }
+}package hse.kpo.factories.carFactories;
+
+import hse.kpo.domains.cars.Car;
+import hse.kpo.domains.engines.LevitationEngine;
+import hse.kpo.interfaces.factoryInterfaces.ICarFactory;
+import hse.kpo.params.EmptyEngineParams;
+
+import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
+/**
+ * A class that implements the ICarFactory interface and produces levitation cars
+ */
+@Component
+@RequiredArgsConstructor
+public class LevitationCarFactory implements ICarFactory<EmptyEngineParams> {
+    /**
+     * A method that creates a car
+     * @param carNumber the number of the car
+     * @return the created car
+     */
+    @Override
+    public Car createCar(EmptyEngineParams carParams, int carNumber) {
+        var engine = new LevitationEngine();
+
+        return new Car(carNumber, engine);
+    }
+}package hse.kpo.interfaces.exporterInterfaces;
+
+import hse.kpo.interfaces.domainInterfaces.ITransport;
+
+import java.io.Writer;
+import java.io.IOException;
+import java.util.List;
+
+public interface ITransportExporter {
+    void export(List<ITransport> transports, Writer writer) throws IOException;
+}package hse.kpo.interfaces.exporterInterfaces;
+
+import hse.kpo.builders.Report;
+import java.io.IOException;
+import java.io.Writer;
+
+public interface IReportExporter {
+    void export(Report report, Writer writer) throws IOException;
+}package hse.kpo.interfaces.domainInterfaces;
+
+import hse.kpo.domains.customers.Customer;
+
+public interface ITransport {
+    boolean isCompatible(Customer customer);
+    int getID(); 
+    String getEngineType();
+    String getTransportType();
+}package hse.kpo.interfaces.engineInterfaces;
+
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.params.ProductionTypes;
+
+public interface IEngine {
+
+    /**
+     * Метод для проверки совместимости двигателя с покупателем.
+     *
+     * @param customer - покупатель, с которым мы сравниваем двигатель
+     * @return true, если двигатель подходит покупателю
+     */
+    boolean isCompatible(Customer customer, ProductionTypes productionType);
+}
+package hse.kpo.interfaces.observerInterfaces;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.params.ProductionTypes;
+
+public interface ISalesObserver {
+    void onSale(Customer customer, ProductionTypes productType, int vin);
+    void checkCustomers();
+}package hse.kpo.interfaces.providerInterfaces;
+
+import java.util.List;
+
+import hse.kpo.domains.customers.Customer;
+
+public interface ICustomerProvider {
+    List<Customer> getCustomers(); // метод возвращает коллекцию только для чтения, так как мы не хотим давать вызывающему коду возможность изменять список
+    public void addCustomer(Customer customer);
+}
+package hse.kpo.interfaces.providerInterfaces;
+
+import java.util.List;
+
+import hse.kpo.domains.cars.Car;
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.domains.ships.Ship;
+import hse.kpo.factories.carFactories.ShipWithWheelsFactory;
+import hse.kpo.interfaces.factoryInterfaces.ICarFactory;
+
+public interface ICarProvider {
+    Car takeCar(Customer customer); // Метод возвращает optional на Car, что означает, что метод может ничего не вернуть
+    public <TParams> Car addCar(ICarFactory<TParams> carFactory, TParams carParams);
+    public Car addShipWithWheels(ShipWithWheelsFactory shipWithWheelsFactory, Ship ship);
+    public Car addExistingCar(Car car);
+    public List<Car> getCars();
+}
+package hse.kpo.interfaces.providerInterfaces;
+
+import java.util.List;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.domains.ships.Ship;
+import hse.kpo.interfaces.factoryInterfaces.IShipFactory;
+
+public interface IShipProvider {
+    Ship takeShip(Customer customer); // Метод возвращает optional на Ship, что означает, что метод может ничего не вернуть
+    public <TParams> Ship addShip(IShipFactory<TParams> shipFactory, TParams shipParams);
+    public void deleteShip(int VIN);
+    public List<Ship> getShips();
+}
+package hse.kpo.interfaces.factoryInterfaces;
+
+import hse.kpo.domains.cars.Car;
+
+public interface ICarFactory<TParams> {
+    Car createCar(TParams carParams, int carNumber);
+}package hse.kpo.interfaces.factoryInterfaces;
+
+import hse.kpo.domains.ships.Ship;
+
+public interface IShipFactory<TParams> {
+    Ship createShip(TParams shipParams, int shipNumber);
+}package hse.kpo.dto;
+
+import org.springframework.lang.Nullable;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
+
+public record CarRequest(
+        @Schema(description = "Тип двигателя (PEDAL, HAND, LEVITATION)", example = "PEDAL")
+        @Pattern(regexp = "PEDAL|HAND|LEVITATION", message = "Допустимые значения: PEDAL, HAND, LEVITATION")
+        String engineType,
+
+        @Schema(description = "Размер педалей (1-15)", example = "6")
+        @Min(value = 1, message = "Минимальный размер педалей - 1")
+        @Max(value = 15, message = "Максимальный размер педалей - 15")
+        @Nullable
+        Integer pedalSize
+) {}package hse.kpo.dto;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import hse.kpo.domains.cars.Car;
+import hse.kpo.domains.engines.HandEngine;
+import hse.kpo.domains.engines.LevitationEngine;
+import hse.kpo.domains.engines.PedalEngine;
+import hse.kpo.services.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.springframework.web.bind.annotation.RequestBody;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import hse.kpo.facade.HSE;
+import hse.kpo.interfaces.engineInterfaces.IEngine;
+import hse.kpo.params.EngineTypes;
+import lombok.RequiredArgsConstructor;
+
+
+
+@RestController
+@RequestMapping("/api/cars")
+@RequiredArgsConstructor
+@Tag(name = "Автомобили", description = "Управление транспортными средствами")
+public class CarController {
+    private final CarService carService;
+    private final HseService hseService;
+    private final HSE hse;
+
+    // GET by ID
+    @GetMapping("/{vin}")
+    @Operation(summary = "Получить автомобиль по VIN")
+    public ResponseEntity<Car> getCarByVin(@PathVariable int vin) {
+        return carService.getCars().stream()
+                .filter(car -> car.getID() == vin)
+                .findFirst()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    @Operation(summary = "Создать автомобиль",
+            description = "Для PEDAL требуется pedalSize (1-15)")
+    public ResponseEntity<Car> createCar(
+            @Valid @RequestBody CarRequest request,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    bindingResult.getAllErrors().get(0).getDefaultMessage());
+        }
+
+        var engineType = EngineTypes.find(request.engineType());
+        if (engineType.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No this type");
+        }
+
+        var car = switch (engineType.get()) {
+            case EngineTypes.PEDAL -> hse.addPedalCar(request.pedalSize());
+            case EngineTypes.HAND -> hse.addHandCar();
+            case EngineTypes.LEVITATION -> hse.addLevitationCar();
+            default -> throw new RuntimeException();
+        };
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(car);
+    }
+
+    @PostMapping("/sell")
+    @Operation(summary = "Продать все доступные автомобили")
+    public ResponseEntity<Void> sellAllCars() {
+        hse.sellCars();
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/sell/{vin}")
+    @Operation(summary = "Продать автомобиль по VIN")
+    public ResponseEntity<Void> sellCar(@PathVariable int vin) {
+        var carOptional = carService.getCars().stream()
+                .filter(c -> c.getID() == vin)
+                .findFirst();
+
+        if (carOptional.isPresent()) {
+            var car = carOptional.get();
+            carService.getCars().remove(car);
+            hseService.sellCar(vin);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/{vin}")
+    @Operation(summary = "Обновить автомобиль")
+    public ResponseEntity<Car> updateCar(
+            @PathVariable int vin,
+            @Valid @RequestBody CarRequest request) {
+
+        return carService.getCars().stream()
+                .filter(car -> car.getID() == vin)
+                .findFirst()
+                .map(existingCar -> {
+                    var updatedCar = createCarFromRequest(request, vin);
+                    carService.getCars().remove(existingCar);
+                    carService.addExistingCar(updatedCar);
+                    return ResponseEntity.ok(updatedCar);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{vin}")
+    @Operation(summary = "Удалить автомобиль")
+    public ResponseEntity<Void> deleteCar(@PathVariable int vin) {
+        boolean removed = carService.getCars().removeIf(car -> car.getID() == vin);
+        return removed ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping
+    @Operation(summary = "Получить все автомобили с фильтрацией",
+            parameters = {
+                    @Parameter(name = "engineType", description = "Фильтр по типу двигателя"),
+                    @Parameter(name = "minVin", description = "Минимальный VIN")
+            })
+    public List<Car> getAllCars(
+            @RequestParam(required = false) String engineType,
+            @RequestParam(required = false) Integer minVin) {
+
+        return carService.getCars().stream()
+                .filter(car -> engineType == null || car.getEngineType().equals(engineType))
+                .filter(car -> minVin == null || car.getID() >= minVin)
+                .toList();
+    }
+
+    private Car createCarFromRequest(CarRequest request, int vin) {
+        IEngine engine = switch (EngineTypes.valueOf(request.engineType())) {
+            case PEDAL -> new PedalEngine(request.pedalSize());
+            case HAND -> new HandEngine();
+            case LEVITATION -> new LevitationEngine();
+        };
+        return new Car(vin, engine);
+    }
+}package hse.kpo.exporters;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import hse.kpo.builders.Report;
+import hse.kpo.interfaces.exporterInterfaces.IReportExporter;
+
+import java.io.IOException;
+import java.io.Writer;
+
+public class JsonReportExporter implements IReportExporter {
+private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Override
+    public void export(Report report, Writer writer) throws IOException {
+        objectMapper.writeValue(writer, report);
+    }
+}package hse.kpo.exporters;
+
+import hse.kpo.interfaces.domainInterfaces.ITransport;
+import hse.kpo.interfaces.exporterInterfaces.ITransportExporter;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
+
+public class XMLReportExporter implements ITransportExporter {
+
+    @Override
+    public void export(List<ITransport> transports, Writer writer) throws IOException {
+        writer.write("<Transport>\n");
+        for (ITransport transport : transports) {
+            writer.write(String.format("""
+                <Vehicle>
+                    <VIN>%d</VIN>
+                    <Type>%s</Type>
+                    <Engine>
+                        <Type>%s</Type>
+                    </Engine>
+                </Vehicle>
+                """,
+                transport.getID(),
+                transport.getTransportType(),
+                transport.getEngineType()
+                ));
+        }
+        writer.write("</Transport>\n");
+    }
+}
+package hse.kpo.exporters;
+
+import hse.kpo.interfaces.domainInterfaces.ITransport;
+import hse.kpo.interfaces.exporterInterfaces.ITransportExporter;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
+
+public class CSVReportExporter implements ITransportExporter {
+
+    @Override
+    public void export(List<ITransport> transports, Writer writer) throws IOException {
+        for (ITransport transport : transports) {
+            writer.write(String.format("%d,%s,%s\n",
+                    transport.getID(),
+                    transport.getTransportType(),
+                    transport.getEngineType()));
+        }
+    }
+}
+package hse.kpo.exporters;
+
+import hse.kpo.builders.Report;
+import hse.kpo.interfaces.exporterInterfaces.IReportExporter;
+
+import java.io.IOException;
+import java.io.Writer;
+
+public class MarkdownReportExporter implements IReportExporter {
+    @Override
+    public void export(Report report, Writer writer) throws IOException {
+        writer.write("# " + report.title() + "\n\n");
+        String[] lines = report.content().split("\n");
+        for (String line : lines) {
+            if (line.startsWith("Операция: ")) {
+                writer.write("## " + line.substring(10) + "\n");
+            } else {
+                writer.write(line + "\n");
+            }
+        }
+        writer.flush();
+    }
+}package hse.kpo.facade;
+
+import hse.kpo.services.*;
+import jakarta.annotation.PostConstruct;
+import hse.kpo.factories.carFactories.HandCarFactory;
+import hse.kpo.factories.carFactories.LevitationCarFactory;
+import hse.kpo.factories.carFactories.PedalCarFactory;
+import hse.kpo.factories.carFactories.ShipWithWheelsFactory;
+import hse.kpo.factories.exportFactories.ReportExporterFactory;
+import hse.kpo.factories.shipFactories.HandShipFactory;
+import hse.kpo.factories.shipFactories.LevitationShipFactory;
+import hse.kpo.factories.shipFactories.PedalShipFactory;
+import hse.kpo.observers.*;
+import hse.kpo.params.*;
+
+import lombok.RequiredArgsConstructor;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
+import java.util.stream.Stream;
+
+import org.springframework.stereotype.Component;
+
+import hse.kpo.builders.Report;
+import hse.kpo.domains.cars.Car;
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.domains.ships.Ship;
+import hse.kpo.interfaces.domainInterfaces.ITransport;
+import hse.kpo.interfaces.exporterInterfaces.IReportExporter;
+import hse.kpo.interfaces.exporterInterfaces.ITransportExporter;
+
+@Component
+@RequiredArgsConstructor
+public class HSE {
+
+    private final PedalCarFactory pedalCarFactory;
+
+    private final HandCarFactory handCarFactory;
+
+    private final PedalShipFactory pedalShipFactory;
+
+    private final HandShipFactory handShipFactory;
+
+    private final ReportSalesObserver reportSalesObserver;
+
+    private final ReportExporterFactory reportExporterFactory;
+
+    private final LevitationShipFactory levitationShipFactory;
+
+    private final LevitationCarFactory levitationCarFactory;
+
+    private final ShipWithWheelsFactory shipWithWheelsFactory;
+
+    private final HseService hseService;
+
+    @PostConstruct
+    public void init() {
+        hseService.addObserver(reportSalesObserver);
+    }
+
+    public void addTransportFromReport(ReportFormat format) {
+        try {
+            switch (format) {
+                case CSV -> loadTransportFromCSV("reports/transport.csv");
+                case XML -> loadTransportFromXML("reports/transport.xml");
+                default -> throw new IllegalArgumentException("Unsupported format: " + format);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to load transport data", e);
+        }
+    }
+
+    private void loadTransportFromCSV(String filePath) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                int vin = Integer.parseInt(values[0]);
+                String type = values[1];
+                String engineType = values[2];
+
+                switch (type) {
+                    case "Car":
+                        switch (engineType) {
+                            case "HandEngine()":
+                                addHandCar();
+                                break;
+                            case "LevitationEngine()":
+                                addLevitationCar();
+                                break;
+                            default:
+                                if (engineType.startsWith("PedalEngine(size=")) {
+                                    int size = Integer.parseInt(engineType.substring(engineType.indexOf('=') + 1, engineType.indexOf(')')));
+                                    addPedalCar(size);
+                                } else if (vin >= 10000) {
+                                    addShipWithWheels();
+                                } else {
+                                    throw new IllegalArgumentException("Unsupported engine type: " + engineType);
+                                }
+                                break;
+                        }
+                        break;
+                    case "Ship":
+                        switch (engineType) {
+                            case "HandEngine()":
+                                addHandShip();
+                                break;
+                            case "LevitationEngine()":
+                                addLevitationShip();
+                                break;
+                            default:
+                                if (engineType.startsWith("PedalEngine")) {
+                                    int size = Integer.parseInt(engineType.substring(engineType.indexOf('=') + 1, engineType.indexOf(')')));
+                                    addPedalShip(size);
+                                } else {
+                                    throw new IllegalArgumentException("Unsupported engine type: " + engineType);
+                                }
+                        }
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unsupported transport type: " + type);
+                }
+            }
+        }
+    }
+
+    private void loadTransportFromXML(String filePath) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.contains("<VIN>")) {
+                    int vin = Integer.parseInt(line.trim().replaceAll("<[^>]+>", ""));
+                    line = br.readLine(); // Type line
+                    String type = line.trim().replaceAll("<[^>]+>", "");
+                    line = br.readLine(); // Engine start
+                    line = br.readLine(); // Engine type
+                    String engineType = line.trim().replaceAll("<[^>]+>", "");
+
+                    switch (type) {
+                        case "Car":
+                            if (vin >= 10000) {
+                                addShipWithWheels();
+                            } else if (engineType.equals("HandEngine()")) {
+                                addHandCar();
+                            } else if (engineType.equals("LevitationEngine()")) {
+                                addLevitationCar();
+                            } else if (engineType.startsWith("PedalEngine(size=")) {
+                                int size = Integer.parseInt(engineType.replaceAll("[^0-9]", ""));
+                                addPedalCar(size);
+                            } else {
+                                throw new IllegalArgumentException("Unsupported engine type: " + engineType);
+                            }
+                            break;
+                        case "Ship":
+                            if (engineType.equals("HandEngine()")) {
+                                addHandShip();
+                            } else if (engineType.equals("LevitationEngine()")) {
+                                addLevitationShip();
+                            } else if (engineType.startsWith("PedalEngine(size=")) {
+                                int size = Integer.parseInt(engineType.replaceAll("[^0-9]", ""));
+                                addPedalShip(size);
+                            } else {
+                                throw new IllegalArgumentException("Unsupported engine type: " + engineType);
+                            }
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unsupported transport type: " + type);
+                    }
+                }
+            }
+        }
+    }
+
+    public void addCustomer(String name, int legPower, int handPower, int iq) {
+        hseService.getCustomerProvider().addCustomer(new Customer(name, legPower, handPower, iq));
+    }
+
+    public Car addPedalCar(int pedalSize) {
+        return hseService.getCarProvider().addCar(pedalCarFactory, new PedalEngineParams(pedalSize));
+    }
+
+    public Car addHandCar() {
+        return hseService.getCarProvider().addCar(handCarFactory, EmptyEngineParams.DEFAULT);
+    }
+
+    public Car addLevitationCar() {
+        return hseService.getCarProvider().addCar(levitationCarFactory, EmptyEngineParams.DEFAULT);
+    }
+
+    public void addPedalShip(int pedalSize) {
+        hseService.getShipProvider().addShip(pedalShipFactory, new PedalEngineParams(pedalSize));
+    }
+
+    public void addHandShip() {
+        hseService.getShipProvider().addShip(handShipFactory, new EmptyEngineParams());
+    }
+
+    public Ship addLevitationShip() {
+        return hseService.getShipProvider().addShip(levitationShipFactory, new EmptyEngineParams());
+    }
+
+    public void addShipWithWheels() {
+        Ship ship = addLevitationShip();
+        hseService.getShipProvider().deleteShip(ship.getVIN());
+        hseService.getCarProvider().addShipWithWheels(shipWithWheelsFactory, ship);
+    }
+
+    public void sellCars() {
+        hseService.sellCars();
+    }
+
+    public void sellShips() {
+        hseService.sellShips();
+    }
+
+    public void exportReport(ReportFormat format, Writer writer) {
+        Report report = reportSalesObserver.buildReport();
+        IReportExporter exporter = reportExporterFactory.createReport(format);
+
+        try {
+            exporter.export(report, writer);
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
+
+    public void exportTransport(ReportFormat format, Writer writer) {
+        List<ITransport> transport = Stream.concat(
+                hseService.getCarProvider().getCars().stream(),
+                hseService.getShipProvider().getShips().stream())
+                .toList();
+        ITransportExporter exporter = reportExporterFactory.createTransoport(format);
+        try {
+            exporter.export(transport, writer);
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
+
+    public Report generateReport() {
+        return reportSalesObserver.buildReport();
+    }
+}
+package hse.kpo.FactoriesTests;
+
+import hse.kpo.factories.carFactories.PedalCarFactory;
+import hse.kpo.params.PedalEngineParams;
+import hse.kpo.services.CarService;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
+class KpoFactoriesTest_2 {
+	@Test
+	@DisplayName("Тест добавления машины с использованием spy-объекта")
+	void testAddCarWithSpy() {
+		// Создаем spy для PedalCarFactory
+		PedalCarFactory pedalCarFactorySpy = spy(new PedalCarFactory());
+
+		// Создаем реальный CarService
+		CarService carService = new CarService();
+
+		// Вызываем метод и проверяем результат
+		carService.addCar(pedalCarFactorySpy, new PedalEngineParams(1));
+		verify(pedalCarFactorySpy).createCar(any(), anyInt()); // Проверяем, что метод createCar был вызван
+	}
+}
+package hse.kpo.FactoriesTests;
+
+import hse.kpo.domains.cars.Car;
+import hse.kpo.domains.engines.HandEngine;
+import hse.kpo.domains.engines.LevitationEngine;
+import hse.kpo.domains.engines.PedalEngine;
+import hse.kpo.domains.ships.Ship;
+import hse.kpo.factories.carFactories.HandCarFactory;
+import hse.kpo.factories.carFactories.LevitationCarFactory;
+import hse.kpo.factories.carFactories.PedalCarFactory;
+import hse.kpo.factories.shipFactories.HandShipFactory;
+import hse.kpo.factories.shipFactories.LevitationShipFactory;
+import hse.kpo.factories.shipFactories.PedalShipFactory;
+import hse.kpo.params.EmptyEngineParams;
+import hse.kpo.params.PedalEngineParams;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+class KpoFactoriesTest_1 {
+
+    @Autowired
+	private PedalCarFactory pedalCarFactory;
+
+	@Autowired
+	private HandCarFactory handCarFactory;
+
+	@Autowired
+	private LevitationCarFactory levitationCarFactory;
+
+	@Autowired
+	private PedalShipFactory pedalShipFactory;
+
+	@Autowired
+	private HandShipFactory handShipFactory;
+
+	@Autowired
+	private LevitationShipFactory levitationShipFactory;
+
+	@Test
+	@DisplayName("Проверка каждой фабрики на соответствие типу производимого двигателя")
+	void factoryCheck() {
+		Car pedalCar = pedalCarFactory.createCar(new PedalEngineParams(1), 1);
+		Car handCar = handCarFactory.createCar(EmptyEngineParams.DEFAULT, 2);
+		Car levitationCar = levitationCarFactory.createCar(EmptyEngineParams.DEFAULT, 3);
+
+		assertTrue(pedalCar.getEngine() instanceof PedalEngine);
+		assertTrue(handCar.getEngine() instanceof HandEngine);
+		assertTrue(levitationCar.getEngine() instanceof LevitationEngine);
+		
+		Ship pedalShip = pedalShipFactory.createShip(new PedalEngineParams(5), 1);
+		Ship handShip = handShipFactory.createShip(EmptyEngineParams.DEFAULT, 2);
+		Ship levitationShip = levitationShipFactory.createShip(EmptyEngineParams.DEFAULT, 3);
+
+		assertTrue(pedalShip.getEngine() instanceof PedalEngine);
+		assertTrue(handShip.getEngine() instanceof HandEngine);
+		assertTrue(levitationShip.getEngine() instanceof LevitationEngine);
+	}
+}package hse.kpo.FactoriesTests;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.factories.carFactories.LevitationCarFactory;
+import hse.kpo.services.ShipService;
+import hse.kpo.params.EmptyEngineParams;
+import hse.kpo.services.CarService;
+import hse.kpo.services.CustomerStorage;
+import hse.kpo.services.HseService;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+class KpoFactoriesTest_3 {
+
+	@Autowired
+	private LevitationCarFactory levitationCarFactory;
+
+@Test
+@DisplayName("Тест на проверку продажи машины покупателю с несоответствующими для машины параметрами")
+void testSellCarToStupidCustomer() {
+    // Создаем реальный CarService
+    CarService carService = new CarService();
+
+    // Создаем реальный ShipProvider
+    ShipService shipProvider = new ShipService();
+
+    // Создаем реальный CustomerStorage
+    CustomerStorage customerStorage = new CustomerStorage();
+    customerStorage.addCustomer(new Customer("John", 6, 4, 50));
+
+    carService.addCar(levitationCarFactory, EmptyEngineParams.DEFAULT);
+
+
+    // Создаем HseCarService
+    HseService hseCarService = new HseService(carService, shipProvider, customerStorage);
+
+    // Вызываем метод sellCars
+    hseCarService.sellCars();
+
+    // Проверяем, что машина у покупателя не появилась
+    assertNull(customerStorage.getCustomers().get(0).getCar());
+    }
+}package hse.kpo.ServicesTests;
+
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.services.CustomerStorage;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+class KpoServicesTest_1 {
+
+	@Autowired
+	private CustomerStorage customerStorage;
+
+
+	@Test
+	@DisplayName("Проверка CutsomerStorage на содержание всех созданных покупателей")
+	void customersCheck() {
+        customerStorage.addCustomer(new Customer("John", 6, 4, 50));
+        customerStorage.addCustomer(new Customer("Bob", 4, 6, 200));
+        customerStorage.addCustomer(new Customer("Глеб", 0, 0, 300));
+        customerStorage.addCustomer(new Customer("Jack", 4, 4, 2));
+
+        List<Customer> customers = customerStorage.getCustomers();
+        for (Customer customer : customers) {
+            if (customer.getName().equals("John")) {
+                assertEquals(6, customer.getLegPower());
+                assertEquals(4, customer.getHandPower());
+                assertEquals(50, customer.getIq());
+            } else if (customer.getName().equals("Bob")) {
+                assertEquals(4, customer.getLegPower());
+                assertEquals(6, customer.getHandPower());
+                assertEquals(200, customer.getIq());
+            } else if (customer.getName().equals("Глеб")) {
+                assertEquals(0, customer.getLegPower());
+                assertEquals(0, customer.getHandPower());
+                assertEquals(300, customer.getIq());
+            } else if (customer.getName().equals("Jack")) {
+                assertEquals(4, customer.getLegPower());
+                assertEquals(4, customer.getHandPower());
+                assertEquals(2, customer.getIq());
+            }
+        }
+	}
+}package hse.kpo.ServicesTests;
+
+import hse.kpo.domains.cars.Car;
+import hse.kpo.domains.customers.Customer;
+import hse.kpo.services.CarService;
+import hse.kpo.services.CustomerStorage;
+import hse.kpo.services.ShipService;
+import hse.kpo.services.HseService;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+class KpoServicesTest_2 {
+
+	@Test
+	@DisplayName("Тест продажи машин с использованием mock-объекта")
+	void testSellCarsWithMock() {
+		CarService carServiceMock = mock(CarService.class);
+		when(carServiceMock.takeCar(any(Customer.class))).thenReturn(new Car(0, null));
+
+		// Создаем реальный CustomerStorage
+		CustomerStorage customerStorage = new CustomerStorage();
+		customerStorage.addCustomer(new Customer("John", 6, 4, 50));
+		customerStorage.addCustomer(new Customer("Bob", 4, 6, 200));
+
+		// Создаем HseCarService с mock-объектом
+		HseService hseCarService = new HseService(carServiceMock, new ShipService(), customerStorage);
+
+		// Вызываем метод и проверяем результат
+		hseCarService.sellCars();
+		assertNotNull(customerStorage.getCustomers().get(0).getCar());
+		assertNotNull(customerStorage.getCustomers().get(1).getCar());
+	}
+}package hse.kpo.ServicesTests;
+
+import hse.kpo.factories.carFactories.PedalCarFactory;
+import hse.kpo.services.CarService;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+class KpoServicesTest_3 {
+
+    @Autowired
+    private PedalCarFactory pedalCarFactory;
+
+	@Test
+	@DisplayName("Тест с выбросом исключения в случае некорректных параметров")
+	void testAddCarFails() {
+		// Создаем CarService
+		CarService carService = new CarService();
+	
+		// Пытаемся добавить машину с некорректными параметрами
+		// Передаем null вместо параметров
+		// Проверяем, что метод выбрасывает исключение
+		assertThrows(RuntimeException.class, () -> carService.addCar(pedalCarFactory, null));
+	}
+}
