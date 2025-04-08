@@ -1,8 +1,0 @@
-id,name,balance
-0,Максим,0.000000
-id,name,type
-0,Overwatch,true
-1,курьер,true
-id,type,bank_account_id,amount,date,description,category_id
-0,true,0,4000.000000,Fri Apr 04 02:41:10 MSK 2025,Заработал_на_киберспорте,0
-1,true,0,3000.000000,Fri Apr 04 02:41:42 MSK 2025,Поработал,0
