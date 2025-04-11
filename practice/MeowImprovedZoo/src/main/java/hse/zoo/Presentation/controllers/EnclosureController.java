@@ -31,7 +31,7 @@ public class EnclosureController {
 
     @GetMapping("/get/{id}")
     @Operation(summary = "Получить вольер по id")
-    public ResponseEntity<Enclosure> getEnclosureById(@PathVariable int id) {
+    public ResponseEntity<Enclosure> getEnclosureById(@PathVariable("id") int id) {
         try {
             Enclosure tmp = zooFacade.getEnclosure(id);
             return ResponseEntity.ok(tmp);
@@ -68,7 +68,7 @@ public class EnclosureController {
 
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Удалить вольер")
-    public ResponseEntity<String> DeleteEnclosure(@PathVariable int id) {
+    public ResponseEntity<String> DeleteEnclosure(@PathVariable("id") int id) {
         try {
             zooFacade.deleteEnclosure(id);
             return ResponseEntity.ok("Вольер с id " + id + " удалён");
@@ -80,10 +80,14 @@ public class EnclosureController {
 
     @GetMapping("/get/all")
     @Operation(summary = "Получить все вольеры")
-    public ResponseEntity<List<Enclosure>> getAllEnclosures() {
+    public ResponseEntity<String> getAllEnclosures() {
         try {
             List<Enclosure> enclosures = zooFacade.getEnclosures();
-            return ResponseEntity.ok(enclosures);
+            String result = "";
+            for (Enclosure enclosure : enclosures) {
+                result += enclosure.toString() + ", ID=" + zooFacade.getEnclosureId(enclosure) + "\n";
+            }
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     e.getMessage());        
@@ -92,10 +96,14 @@ public class EnclosureController {
     
     @GetMapping("/get/empty")
     @Operation(summary = "Получить пустые вольеры")
-    public ResponseEntity<List<Enclosure>> getEmptyEnclosures() {
+    public ResponseEntity<String> getEmptyEnclosures() {
         try {
             List<Enclosure> enclosures = zooFacade.getEmptyEnclosures();
-            return ResponseEntity.ok(enclosures);
+            String result = "";
+            for (Enclosure enclosure : enclosures) {
+                result += enclosure.toString() + ", ID=" + zooFacade.getEnclosureId(enclosure) + "\n";
+            }
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     e.getMessage());        

@@ -1,5 +1,6 @@
 package hse.zoo.Presentation.controllers;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class AnimalContoller {
 
     @GetMapping("/get/{id}")
     @Operation(summary = "Получить животное по id")
-    public ResponseEntity<Animal> getAnimalById(@PathVariable int id) {
+    public ResponseEntity<Animal> getAnimalById(@PathVariable("id") int id) {
         try {
             Animal tmp = zooFacade.getAnimal(id);
             return ResponseEntity.ok(tmp);
@@ -45,12 +46,15 @@ public class AnimalContoller {
 
     @GetMapping("/get/enclosureFromAnimal/{id}")
     @Operation(summary = "Проверить в каком вольере находится животное")
-    public ResponseEntity<String> getEnclosureByAnimalId(@PathVariable int id) {
+    public ResponseEntity<String> getEnclosureByAnimalId(@PathVariable("id") int id) {
         try {
             Integer enclosureId = zooFacade.getEnclosureByAnimalId(id);
+            if (enclosureId == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Животное с id " + id + " не находится ни в одном вольере");
+            }
             return ResponseEntity.status(HttpStatus.FOUND).body("Животное с id " + id + " находится в вольере с id " + enclosureId);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     e.getMessage());        
         }
     }
@@ -70,11 +74,12 @@ public class AnimalContoller {
             Integer enclosureId = request.enclosureId();
             String species = request.species();
             String name = request.name();
-            Date birthDate = request.birthDate();
+            String date = request.birthDate();
             Boolean sex = request.sex();
             String favouriteFood = request.favouriteFood();
             Boolean isHealthy = request.isHealthy();
-            Integer animalId = zooFacade.addAnimal(enclosureId, name, birthDate, sex, favouriteFood, isHealthy, species);
+            Date birthDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+            Integer animalId = zooFacade.addAnimal(enclosureId, name, new Date(birthDate.getTime()), sex, favouriteFood, isHealthy, species);
             return ResponseEntity.status(HttpStatus.CREATED).body("Добавлено животное с id " + animalId);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -84,7 +89,7 @@ public class AnimalContoller {
 
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Удалить животное")
-    public ResponseEntity<String> DeleteAnimal(@PathVariable int id) {
+    public ResponseEntity<String> DeleteAnimal(@PathVariable("id") int id) {
         try {
             zooFacade.deleteAnimal(id);
             return ResponseEntity.ok("Животное с id " + id + " удалено");
@@ -96,7 +101,7 @@ public class AnimalContoller {
 
     @PostMapping("/transfer/{animalId}/{enclosureId}")
     @Operation(summary = "Перевести животное в вольер")
-    public ResponseEntity<String> TransferAnimal(@PathVariable int animalId, @PathVariable int enclosureId) {
+    public ResponseEntity<String> TransferAnimal(@PathVariable("animalId") int animalId, @PathVariable("enclosureId") int enclosureId) {
         try {
             zooFacade.transferAnimalToEnclosure(animalId, enclosureId);
             return ResponseEntity.ok("Животное с id" + animalId + " переведено в вольер с id " + enclosureId);
@@ -108,10 +113,14 @@ public class AnimalContoller {
     
     @GetMapping("/get/all")
     @Operation(summary = "Получить всех животных")
-    public ResponseEntity<List<Animal>> getAllAnimals() {
+    public ResponseEntity<String> getAllAnimals() {
         try {
+            String result = "";
             List<Animal> animals = zooFacade.getAnimals();
-            return ResponseEntity.ok(animals);
+            for (Animal animal : animals) {
+                result += animal.toString() + ", ID=" + zooFacade.getAnimalId(animal) + ", EnclosureID=" + zooFacade.getEnclosureByAnimalId(zooFacade.getAnimalId(animal)) + "\n";
+            }
+            return ResponseEntity.ok("Все животные: \n" + result);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     e.getMessage());        
@@ -120,10 +129,14 @@ public class AnimalContoller {
 
     @GetMapping("/get/enclosure/{enclosureId}")
     @Operation(summary = "Получить животных в вольере")
-    public ResponseEntity<String> getAnimalsInEnclosure(@PathVariable int enclosureId) {
+    public ResponseEntity<String> getAnimalsInEnclosure(@PathVariable("enclosureId") int enclosureId) {
         try {
             List<Animal> animals = zooFacade.getAnimalsInEnclosure(enclosureId);
-            return ResponseEntity.ok("Животные в вольере с id " + enclosureId + ": \n" + animals); //
+            String result = "";
+            for (Animal animal : animals) {
+                result += animal.toString() + ", ID=" + zooFacade.getAnimalId(animal) + "\n";
+            }
+            return ResponseEntity.ok("Животные в вольере с id " + enclosureId + ": \n" + result);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     e.getMessage());        
@@ -135,7 +148,11 @@ public class AnimalContoller {
     public ResponseEntity<String> getIllAnimals() {
         try {
             List<Animal> animals = zooFacade.getIllAnimals();
-            return ResponseEntity.ok("Больные животные: \n" + animals); //
+            String result = "";
+            for (Animal animal : animals) {
+                result += animal.toString() + ", ID=" + zooFacade.getAnimalId(animal) + ", EnclosureID=" + zooFacade.getEnclosureByAnimalId(zooFacade.getAnimalId(animal)) + "\n";
+            }
+            return ResponseEntity.ok("Больные животные: \n" + result);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     e.getMessage());        
@@ -144,7 +161,7 @@ public class AnimalContoller {
 
     @PutMapping("/heal/{animalId}")
     @Operation(summary = "Лечить животное")
-    public ResponseEntity<String> healAnimal(@PathVariable int animalId) {
+    public ResponseEntity<String> healAnimal(@PathVariable("animalId") int animalId) {
         try {
             zooFacade.healAnimal(animalId);
             return ResponseEntity.ok("Животное с id " + animalId + " вылечено");
@@ -159,7 +176,11 @@ public class AnimalContoller {
     public ResponseEntity<String> getFreeAnimals() {
         try {
             List<Animal> animals = zooFacade.getAnimalsWithoutEnclosure();
-            return ResponseEntity.ok("Животные вне вольера: \n" + animals.toString());
+            String result = "";
+            for (Animal animal : animals) {
+                result += animal.toString() + ", ID=" + zooFacade.getAnimalId(animal) + "\n";
+            }
+            return ResponseEntity.ok("Животные вне вольера: \n" + result);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     e.getMessage());        

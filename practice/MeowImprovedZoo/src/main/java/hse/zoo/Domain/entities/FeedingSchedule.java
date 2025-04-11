@@ -1,6 +1,8 @@
 package hse.zoo.Domain.entities;
 
-import java.util.Date;
+import java.sql.Time;
+import java.time.LocalTime;
+import java.time.ZoneId;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -14,18 +16,18 @@ public class FeedingSchedule {
     private Animal animal;
 
     @Getter
-    private Date feedingTime;
+    private Time feedingTime;
 
     @Getter
     private Boolean foodType; // 0 - vegetables, 1 - meat
 
-    public FeedingSchedule(Animal animal, Date feedingTime, Boolean foodType) {
+    public FeedingSchedule(Animal animal, Time feedingTime, Boolean foodType) {
         this.animal = animal;
         this.feedingTime = feedingTime;
         this.foodType = foodType;
     }
 
-    public FeedingSchedule changeSchedule(Animal animal, Date feedingTime, Boolean foodType) {
+    public FeedingSchedule changeSchedule(Animal animal, Time feedingTime, Boolean foodType) {
         this.animal = animal;
         this.feedingTime = feedingTime;
         this.foodType = foodType;
@@ -33,7 +35,9 @@ public class FeedingSchedule {
     }
 
     public Boolean checkIfFed() {
-        if (feedingTime.before(new Date())) {
+        LocalTime feedingTimeOfDay = feedingTime.toLocalTime();
+        LocalTime currentTime = LocalTime.now(ZoneId.systemDefault());
+        if (feedingTimeOfDay.isBefore(currentTime)) {
             animal.feed();
             return true;
         } else {

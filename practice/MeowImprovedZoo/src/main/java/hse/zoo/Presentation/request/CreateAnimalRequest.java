@@ -1,7 +1,5 @@
 package hse.zoo.Presentation.request;
 
-import java.util.Date;
-
 import org.springframework.lang.Nullable;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,7 +16,7 @@ public record CreateAnimalRequest(
         String name,
 
         @Schema(description = "Дата рождения животного в формате гггг-мм-дд", example = "2022-01-01")
-        Date birthDate,
+        String birthDate,
 
         @Schema(description = "Пол животного (0 - мужской, 1 - женский)", example = "0")
         Boolean sex,

@@ -1,5 +1,6 @@
 package hse.zoo.Application.facade;
 
+import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 
@@ -58,7 +59,7 @@ public class ZooFacade {
         animalTransferService.transferAnimalToEnclosure(animalId, enclosureId);
     }
 
-    public Integer addFeedingSchedule(Integer animalId, Date feedingTime, Boolean foodType) {
+    public Integer addFeedingSchedule(Integer animalId, Time feedingTime, Boolean foodType) {
         Animal animal = animalRepository.getAnimal(animalId);
         FeedingSchedule schedule = new FeedingSchedule(animal, feedingTime, foodType);
         return feedingOrganizationService.addFeedingSchedule(schedule);
@@ -68,7 +69,7 @@ public class ZooFacade {
         return feedingOrganizationService.deleteFeedingSchedule(scheduleId);
     }
 
-    public void changeSchedule(Integer scheduleId, Integer animalId, Date feedingTime, Boolean foodType) {
+    public void changeSchedule(Integer scheduleId, Integer animalId, Time feedingTime, Boolean foodType) {
         FeedingSchedule schedule = new FeedingSchedule(animalRepository.getAnimal(animalId), feedingTime, foodType);
         feedingOrganizationService.changeSchedule(scheduleId, schedule);
     }

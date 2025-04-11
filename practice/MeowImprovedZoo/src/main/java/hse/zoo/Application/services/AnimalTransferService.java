@@ -39,6 +39,10 @@ public class AnimalTransferService implements IAnimalTransferService {
 
     @Override
     public Boolean deleteEnclosure(Integer enclosureId) {
+        Enclosure enclosure = enclosureRepository.getEnclosure(enclosureId);
+        if (enclosure != null && enclosure.getCurrentAnimalCount() > 0) {
+            throw new IllegalStateException("cannot delete enclosure with animals");
+        }
         return enclosureRepository.deleteEnclosure(enclosureId);
     }
 

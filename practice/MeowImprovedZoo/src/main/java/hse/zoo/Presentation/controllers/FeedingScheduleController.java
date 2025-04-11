@@ -1,9 +1,8 @@
 package hse.zoo.Presentation.controllers;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.sql.Time;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -36,7 +35,7 @@ public class FeedingScheduleController {
 
     @GetMapping("/get/{id}")
     @Operation(summary = "Получить расписание по id")
-    public ResponseEntity<FeedingSchedule> getScheduleById(@PathVariable int id) {
+    public ResponseEntity<FeedingSchedule> getScheduleById(@PathVariable("id") int id) {
         try {
             FeedingSchedule tmp = zooFacade.getSchedule(id);
             return ResponseEntity.ok(tmp);
@@ -61,8 +60,9 @@ public class FeedingScheduleController {
             Integer animalId = request.animalId();
             String feedingTime = request.time();
             Boolean foodType = request.foodType();
-            Date feedingTimeDate = Date.from(LocalDateTime.parse(feedingTime, DateTimeFormatter.ofPattern("HH:mm")).atZone(ZoneId.systemDefault()).toInstant());
-            Integer scheduleId = zooFacade.addFeedingSchedule(animalId, feedingTimeDate, foodType);
+            LocalTime localTime = LocalTime.parse(feedingTime, DateTimeFormatter.ofPattern("HH:mm"));
+            Time time = Time.valueOf(localTime);
+            Integer scheduleId = zooFacade.addFeedingSchedule(animalId, time, foodType);
             return ResponseEntity.status(HttpStatus.CREATED).body("Добавлено расписание с id " + scheduleId);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -72,7 +72,7 @@ public class FeedingScheduleController {
 
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Удалить расписание")
-    public ResponseEntity<String> DeleteSchedule(@PathVariable int id) {
+    public ResponseEntity<String> DeleteSchedule(@PathVariable("id") int id) {
         try {
             zooFacade.deleteFeedingSchedule(id);
             return ResponseEntity.ok("Вольер с id " + id + " удалён");
@@ -84,7 +84,7 @@ public class FeedingScheduleController {
 
     @PutMapping("/change/{id}")
     @Operation(summary = "Изменить расписание")
-    public ResponseEntity<String> changeSchedule(@PathVariable int id,
+    public ResponseEntity<String> changeSchedule(@PathVariable("id") int id,
             @Valid @RequestBody CreateFeedingScheduleRequest request,
             BindingResult bindingResult) {
 
@@ -97,8 +97,9 @@ public class FeedingScheduleController {
             Integer animalId = request.animalId();
             String feedingTime = request.time();
             Boolean foodType = request.foodType();
-            Date feedingTimeDate = Date.from(LocalDateTime.parse(feedingTime, DateTimeFormatter.ofPattern("HH:mm")).atZone(ZoneId.systemDefault()).toInstant());
-            zooFacade.changeSchedule(id, animalId, feedingTimeDate, foodType);
+            LocalTime localTime = LocalTime.parse(feedingTime, DateTimeFormatter.ofPattern("HH:mm"));
+            Time time = Time.valueOf(localTime);            
+            zooFacade.changeSchedule(id, animalId, time, foodType);
             return ResponseEntity.ok("Расписание с id " + id + " изменено");
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -108,10 +109,14 @@ public class FeedingScheduleController {
 
     @GetMapping("/all")
     @Operation(summary = "Получить все расписания")
-    public ResponseEntity<List<FeedingSchedule>> getAllSchedules() {
+    public ResponseEntity<String> getAllSchedules() {
         try {
             List<FeedingSchedule> schedules = zooFacade.getSchedules();
-            return ResponseEntity.ok(schedules);
+            String result = "";
+            for (FeedingSchedule schedule : schedules) {
+                result += schedule.toString() + ", ID=" + zooFacade.getFeedingScheduleId(schedule) + ", AnimalID=" + zooFacade.getAnimalId(schedule.getAnimal()) + "\n";
+            }
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     e.getMessage());        
@@ -120,7 +125,7 @@ public class FeedingScheduleController {
 
     @GetMapping("/check/{id}")
     @Operation(summary = "Проверить, поело ли сегодня животное")
-    public ResponseEntity<String> checkIfFed(@PathVariable int id) {
+    public ResponseEntity<String> checkIfFed(@PathVariable("id") int id) {
         try {
             boolean isFed = zooFacade.checkIfFed(id);
             return ResponseEntity.ok(isFed ? "Животное уже поело" : "Животное еще не поело");

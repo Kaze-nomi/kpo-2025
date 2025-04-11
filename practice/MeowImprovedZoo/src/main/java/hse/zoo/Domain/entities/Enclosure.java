@@ -6,10 +6,8 @@ import hse.zoo.Domain.valueobjects.AnimalSpecies;
 import hse.zoo.Domain.valueobjects.EnclosureSize;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 @RequiredArgsConstructor
-@ToString
 public class Enclosure {
 
     @Getter
@@ -24,6 +22,11 @@ public class Enclosure {
     @Getter
     private Integer maxAnimalCount;
 
+    public String toString() {
+        String species = type.stream().map(AnimalSpecies::getName).reduce((a, b) -> a + ", " + b).get();
+        return "Enclosure: " + species + ", size: " + size + ", currentAnimalCount: " + currentAnimalCount + ", maxAnimalCount: " + maxAnimalCount;
+    }
+
     public Enclosure(List<String> type, Integer height, Integer width, Integer length, Integer maxAnimalCount) {
         this.type = type.stream().map(AnimalSpecies::new).toList();
         this.size = new EnclosureSize(length, width, height);
@@ -31,7 +34,7 @@ public class Enclosure {
     }
 
     public Boolean isAllowed(AnimalSpecies animalSpecies) {
-        return type.contains(animalSpecies);
+        return type.stream().anyMatch(t -> t.equals(animalSpecies));
     }
     
     public Enclosure addAnimal(Animal animal) {
@@ -42,7 +45,7 @@ public class Enclosure {
                 animal.moveTo(this);
                 return this;
             }
-            throw new IllegalArgumentException("Animal species " + animalSpecies + " is not allowed in this enclosure.");
+            throw new IllegalArgumentException("Animal species " + animalSpecies.getName() + " is not allowed in this enclosure.");
         } else {
             throw new IllegalArgumentException("Enclosure is full.");
         }
