@@ -1,101 +1,193 @@
-# Интерфейсы:
+# Реализованный функционал
 
-- IAlive: Определяет, что объект является "живым" и имеет свойство food (количество еды в сутки).
+## Use Cases:
 
-- IInventory: Определяет, что объект может быть инвентаризирован и имеет свойство number (инвентаризационный номер).
+- **a. Добавить/удалить животное**  
 
-# Классы животных:
+  Контроллер: `AnimalController` (POST `/add`, DELETE `/delete/{id}`)  
 
-- Animal: Базовый класс для всех животных. Реализует интерфейсы IAlive и IInventory. Содержит общие свойства, такие как количество еды, инвентаризационный номер и состояние здоровья.
+  Сервис: `AnimalTransferService`  
 
-- Herbo и Predator: Классы-наследники Animal, представляющие травоядных и хищников. У травоядных добавлено свойство kindnessLevel (уровень доброты), которое определяет, может ли животное взаимодействовать с посетителями.
+  Репозиторий: `AnimalRepository`
 
-- Конкретные классы животных: Monkey, Rabbit, Tiger, Wolf. Наследуются от Herbo или Predator в зависимости от их типа.
+- **b. Добавить/удалить вольер**  
 
-# Классы для вещей:
+  Контроллер: `EnclosureController` (POST `/add`, DELETE `/delete/{id}`)  
 
-- Thing: Базовый класс для инвентаризируемых вещей. Реализует интерфейс IInventory.
+  Сервис: `AnimalTransferService`  
 
-- Конкретные классы вещей: Table, Computer. Наследуются от Thing.
+  Репозиторий: `EnclosureRepository`
 
-# Класс Zoo:
+- **c. Переместить животное между вольерами**  
 
-Управляет всеми животными и вещами в зоопарке.
+  Контроллер: `AnimalController` (POST `/transfer/{animalId}/{enclosureId}`)  
 
-Методы:
+  Сервис: `AnimalTransferService`  
 
-- addAnimal: Добавляет животное в зоопарк после проверки его здоровья.
+  Событие: `AnimalMovedEvent`
 
-- calculateTotalFood: Рассчитывает общее количество еды, необходимое для всех животных.
 
-- getAnimalsForContactZoo: Возвращает список животных, которые могут быть помещены в контактный зоопарк (травоядные с уровнем доброты выше 5).
+- **d. Просмотреть расписание кормления**  
 
-- addThing: Добавляет вещь в инвентарь.
+  Контроллер: `FeedingScheduleController` (GET `/get/{id}`, GET `/all`)  
 
-- printInventory: Выводит информацию о всех животных и вещах, стоящих на балансе зоопарка.
+  Сервис: `FeedingOrganizationService`  
 
----
+  Репозиторий: `FeedingScheduleRepository`
 
-# Принципы SOLID в проекте
+- **e. Добавить новое кормление в расписание**  
 
-## Принцип единственной ответственности (Single Responsibility Principle, SRP):
+  Контроллер: `FeedingScheduleController` (POST `/add`)  
 
-Каждый класс отвечает за одну задачу. Например:
+  Сервис: `FeedingOrganizationService`  
 
-- Animal отвечает за хранение данных о животном.
+  Событие: `FeedingTimeEvent`
 
-- Zoo отвечает за управление животными и вещами.
+- **f. Просмотреть статистику зоопарка**  
 
-- VeterinaryClinic отвечает за проверку здоровья животных.
+  Контроллеры: 
 
-## Принцип открытости/закрытости (Open/Closed Principle, OCP):
+  - `AnimalController` (GET `/get/all`, `/get/ill`, `/get/freeAnimals`)  
 
-Классы открыты для расширения, но закрыты для модификации. Например:
+  - `EnclosureController` (GET `/get/all`, `/get/empty`)
 
-- Добавление новых типов животных (например, Lion или Elephant) не требует изменения существующих классов Animal, Herbo или Predator.
+  - `FeedingScheduleController` (GET `/check/{id}`)
+  
+  Сервис: `ZooStatisticsService`
 
-- Принцип подстановки Барбары Лисков (Liskov Substitution Principle, LSP):
+## Дополнительно:
 
-- Наследники класса Animal (например, Herbo и Predator) могут использоваться вместо базового класса без изменения поведения программы.
+- In-memory хранилище: `AnimalRepository`, `EnclosureRepository`, `FeedingScheduleRepository`
 
-## Принцип разделения интерфейса (Interface Segregation Principle, ISP):
-
-- Интерфейсы IAlive и IInventory разделены, чтобы классы не зависели от методов, которые они не используют. Например, класс Thing реализует только IInventory, а класс Animal реализует оба интерфейса.
-
-## Принцип инверсии зависимостей (Dependency Inversion Principle, DIP):
-
-- Классы зависят от абстракций (интерфейсов), а не от конкретных реализаций. Например:
-
-- Класс Zoo зависит от интерфейса IAlive для работы с животными, а не от конкретных классов животных.
+- Тестирование через Swagger: Конфигурация `SwaggerConfig`, аннотации `@Operation` в контроллерах.
 
 ---
 
-# Использование DI-контейнера
+# Применённые концепции DDD и Clean Architecture
 
-DI-контейнер используется для управления зависимостями между компонентами системы. Например:
+## Domain-Driven Design:
 
-1. Внедрение зависимости в класс Zoo:
+1. **Entities**:
 
-- Класс Zoo зависит от сервиса ветеринарной клиники (VeterinaryClinic), который проверяет здоровье животных. Вместо создания экземпляра VeterinaryClinic внутри Zoo, зависимость внедряется через конструктор.
+   - `Animal`: методы `feed()`, `heal()`, `moveTo()`.
 
-2. Преимущества DI:
+   - `Enclosure`: методы `addAnimal()`, `removeAnimal()`, `clean()`.
 
-- Упрощает тестирование (можно использовать mock-объекты для VeterinaryClinic).
+   - `FeedingSchedule`: методы `changeSchedule()`, `checkIfFed()`.
 
-- Упрощает расширение системы (можно легко заменить реализацию VeterinaryClinic).
+2. **Value Objects**:
 
-- Уменьшает связанность между компонентами.
+   - `FavouriteFood`: валидация названия еды.
+
+   - `AnimalSpecies`: проверка вида животного.
+
+   - `EnclosureSize`: контроль размеров вольера.
+
+3. **Доменные события**:
+
+   - `AnimalMovedEvent` (публикуется при перемещении).
+
+   - `FeedingTimeEvent` (публикуется при кормлении).
+
+## Clean Architecture:
+
+1. **Слои**:
+
+   - **Domain**: 
+
+     - Сущности: `Animal`, `Enclosure`, `FeedingSchedule`.
+
+     - События: `AnimalMovedEvent`, `FeedingTimeEvent`.
+
+     - Value Objects: `AnimalSpecies`, `FavouriteFood`, `EnclosureSize`.
+
+   - **Application**: 
+
+     - Сервисы: `AnimalTransferService`, `FeedingOrganizationService`, `ZooStatisticsService`.
+
+     - Фасад: `ZooFacade`.
+
+   - **Infrastructure**: 
+
+     - Репозитории: `AnimalRepository`, `EnclosureRepository`, `FeedingScheduleRepository`.
+
+   - **Presentation**: 
+
+     - Контроллеры: `AnimalController`, `EnclosureController`, `FeedingScheduleController`.
+
+2. **Зависимости**:
+
+   - Контроллеры зависят от `ZooFacade` (через интерфейсы сервисов).
+
+   - Сервисы используют интерфейсы репозиториев (`IAnimalRepository`, `IEnclosureRepository`).
+
+   - Domain-слой полностью изолирован.
 
 ---
 
-# Инструкция по запуску main: 
+# Тестирование
+
+- **Инструмент**: Swagger UI (доступен по `/swagger-ui.html`).
+
+- **Покрытие кода**: 
+
+  - Тесты контроллеров: `AnimalControllerTest`, `EnclosureControllerTest`, `FeedingScheduleControllerTest`.
+
+  - Проверка сценариев: CRUD-операции, валидация, бизнес-логика (например, запрет на перемещение в переполненный вольер).
+
+---
+
+# Структура проекта
+src/
+├── main/
+│ ├── java/hse/zoo/
+│ │ ├── Application/ # Слой приложения
+│ │ │ ├── facade/ZooFacade # Фасад для API
+│ │ │ ├── services/ # Сервисы
+│ │ │ └── eventHandlers/ # Обработчики событий
+│ │ │
+│ │ ├── Domain/ # Ядро системы
+│ │ │ ├── entities/ # Сущности
+│ │ │ ├── events/ # Доменные события
+│ │ │ ├── valueobjects/ # Value Objects
+│ │ │ └── interfaces/ # Интерфейсы репозиториев и сервисов
+│ │ │
+│ │ ├── Infrastructure/ # Внешние реализации
+│ │ │ └── repositories/ # In-memory репозитории
+│ │ │
+│ │ └── Presentation/ # API и конфигурация
+│ │   ├── controllers/ # Контроллеры
+│ │   └── config/SwaggerConfig # Документация API
+│ │
+│ └── resources/ # Конфигурации Spring
+│
+└── test/ # Тесты
+  └── java/hse/zoo/controllerTests/ # Интеграционные тесты
+
+---
+
+# Инструкция по запуску
 
 1. Запустить ./gradlew bootRun
 
-# Также, можно запустить тесты и проверить покрытие через плагин JaCoCo.
+2. Открыть http://localhost:8080/swagger-ui.html
+
+## Также, можно запустить тесты и проверить покрытие через плагин JaCoCo.
 
 1. Запустить ./gradlew test (результаты в build/reports/tests/test/index.html)
 
 2. Посмотреть покрытие тестов JaCoCo (build/reports/jacoco/test/html/index.html)
 
-# Готово!
+## Примечание
+
+ID сущностей присваиваются автоматически (начинаются с 0).
+
+---
+
+# Итог
+
+- Соблюдены принципы Clean Architecture (изоляция слоёв, зависимости через интерфейсы).
+
+- Применены ключевые концепции DDD: богатые модели, Value Objects, доменные события.
+
+- Реализовано тестирование API через Swagger и интеграционные тесты.

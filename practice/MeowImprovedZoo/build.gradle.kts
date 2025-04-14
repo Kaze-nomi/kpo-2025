@@ -50,18 +50,12 @@ tasks.test {
 
 // Настройка задачи jacocoTestReport
 tasks.jacocoTestReport {
-    // Настраиваем отчёты (XML, HTML, CSV по необходимости)
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-        csv.required.set(false)
-    }
     // Фильтруем классы, исключая Main.class
     classDirectories.setFrom(
         files(classDirectories.files.map {
             fileTree(it) {
                 // Шаблон для исключения всех классов с именем Main.class (в любых пакетах)
-                exclude("**/Main.class")
+                exclude("**/Zoo.class")
             }
         })
     )
