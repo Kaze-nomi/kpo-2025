@@ -1,8 +1,9 @@
 package hse.kpo.services;
 
+import hse.kpo.domains.cars.Car;
 import hse.kpo.domains.customers.Customer;
 import hse.kpo.params.ProductionTypes;
-
+import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,22 +37,21 @@ public class HseService {
     @Getter
     private final ICustomerProvider customerProvider;
 
+    @Transactional
     @Sales
     public void sellCars() {
-        // получаем список покупателей
-        var customers = customerProvider.getCustomers();
-        // пробегаемся по полученному списку
-        customers.stream().filter(customer -> Objects.isNull(customer.getCar()))
-                .forEach(customer -> {
-                    var car = carProvider.takeCar(customer);
-                    if (Objects.nonNull(car)) {
-                        customer.setCar(car);
-                        notifyObserversForSale(customer, ProductionTypes.CAR, car.getVIN());
-                    }
-                    else {
-                        log.warn("Car not found for customer {}", customer.getName());
-                    }
-                });
+        customerProvider.getCustomers().stream()
+            .filter(customer -> customer.getCars() == null || customer.getCars().isEmpty())
+            .forEach(customer -> {
+                Car car = carProvider.takeCar(customer);
+                if (Objects.nonNull(car)) {
+                    customer.getCars().add(car); // Добавляем автомобиль в список клиента
+                    car.setCustomer(customer);   // Устанавливаем ссылку на клиента в автомобиле
+                    notifyObserversForSale(customer, ProductionTypes.CAR, car.getID());
+                } else {
+                    log.warn("No car in CarService");
+                }
+            });
     }
 
 
@@ -60,17 +60,21 @@ public class HseService {
         // получаем список покупателей
         var customers = customerProvider.getCustomers();
         // пробегаемся по полученному списку
-        customers.stream().filter(customer -> Objects.isNull(customer.getCar()))
-                .filter(customer -> carProvider.getCars().stream()
-                        .anyMatch(car -> car.getID() == vin))
+        customers.stream()
+                .filter(customer -> customer.getCars() == null || customer.getCars().isEmpty())
                 .forEach(customer -> {
-                    var car = carProvider.takeCar(customer);
-                    if (Objects.nonNull(car)) {
-                        customer.setCar(car);
+                    var carOptional = carProvider.getCars().stream()
+                            .filter(car -> car.getID() == vin)
+                            .findFirst();
+                    if (carOptional.isPresent()) {
+                        var car = carOptional.get();
+                        carProvider.getCars().remove(car);
+                        customer.getCars().add(car);
+                        car.setCustomer(customer);
+                        carProvider.addExistingCar(car);
                         notifyObserversForSale(customer, ProductionTypes.CAR, vin);
-                    }
-                    else {
-                        log.warn("Car with vin {} not found for customer {}", vin, customer.getName());
+                    } else {
+                        log.warn("Car with vin {} not found", vin);
                     }
                 });
     }

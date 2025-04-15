@@ -1,11 +1,11 @@
 package hse.kpo.observers;
 
 import hse.kpo.params.ProductionTypes;
+import hse.kpo.repositories.CustomerRepository;
 import hse.kpo.builders.Report;
 import hse.kpo.builders.ReportBuilder;
 import hse.kpo.domains.customers.Customer;
 import hse.kpo.interfaces.observerInterfaces.ISalesObserver;
-import hse.kpo.services.CustomerStorage;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ReportSalesObserver implements ISalesObserver {
-private final CustomerStorage customerStorage;
+private final CustomerRepository customerStorage;
 
     private final ReportBuilder reportBuilder = new ReportBuilder();
 
@@ -22,7 +22,7 @@ private final CustomerStorage customerStorage;
     }
 
     public void checkCustomers() {
-        reportBuilder.addCustomers(customerStorage.getCustomers());
+        reportBuilder.addCustomers(customerStorage.findAll());
     }
 
     @Override

@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import hse.kpo.domains.customers.Customer;
-import hse.kpo.services.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import hse.kpo.facade.HSE;
+import hse.kpo.repositories.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Tag(name = "Покупатели", description = "Управление покупателями")
 public class CustomerController {
-    private final CustomerStorage customerStorage;
+    private final CustomerRepository customerStorage;
     private final HSE hse;
 
     @PostMapping
@@ -67,7 +67,7 @@ public class CustomerController {
             @RequestParam(required = false) Integer handPower,
             @RequestParam(required = false) Integer iq) {
 
-        return customerStorage.getCustomers().stream()
+        return customerStorage.findAll().stream()
                 .filter(customer -> legPower == null || customer.getLegPower() >= legPower)
                 .filter(customer -> handPower == null || customer.getHandPower() >= handPower)
                 .filter(customer -> iq == null || customer.getIq() >= iq)

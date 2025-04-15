@@ -1,5 +1,7 @@
 package hse.kpo.domains.cars;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import hse.kpo.domains.customers.Customer;
 import hse.kpo.interfaces.domainInterfaces.ITransport;
 import hse.kpo.interfaces.engineInterfaces.AbstractEngine;
@@ -24,6 +26,12 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class Car implements ITransport {
+
+    @ToString.Exclude
+    @JsonBackReference("customer-cars")
+    @OneToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer; // Ссылка на владельца
 
     @Getter
     @Id

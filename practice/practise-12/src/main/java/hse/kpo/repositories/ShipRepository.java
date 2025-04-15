@@ -1,6 +1,5 @@
 package hse.kpo.repositories;
 
-import hse.kpo.domains.cars.Car;
 import hse.kpo.domains.ships.Ship;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,7 +15,7 @@ public interface ShipRepository extends JpaRepository<Ship, Integer> {
         WHERE e.type = :engineType 
         AND c.VIN > :minVin
     """)
-    List<Car> findShipByEngineTypeAndVinGreaterThan(
+    List<Ship> findShipsByEngineTypeAndVinGreaterThan(
             @Param("engineType") String engineType,
             @Param("minVin") Integer minVin
     );

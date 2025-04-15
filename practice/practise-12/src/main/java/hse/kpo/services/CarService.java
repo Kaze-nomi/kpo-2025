@@ -23,32 +23,25 @@ public class CarService implements ICarProvider {
 
     @Override
     public Car takeCar(Customer customer) {
-
-        var filteredCars = carRepository.findAll().stream().filter(car -> car.isCompatible(customer)).toList();
-
-        var firstCar = filteredCars.stream().findFirst();
-
-        firstCar.ifPresent(carRepository::delete);
-
-        return firstCar.orElse(null);
+        return carRepository.findAll().stream()
+                .filter(car -> car.isCompatible(customer))
+                .findFirst()
+                .orElse(null);
     }
 
-
-   /**
+    /**
      * Метод добавления {@link Car} в систему.
      *
      * @param carFactory фабрика для создания автомобилей
-     * @param carParams параметры для создания автомобиля
+     * @param carParams  параметры для создания автомобиля
      */
     public <T> Car addCar(ICarFactory<T> carFactory, T carParams) {
         return carRepository.save(carFactory.createCar(carParams));
     }
 
-
     public Car addExistingCar(Car car) {
         return carRepository.save(car);
     }
-
 
     public Car addShipWithWheels(ShipWithWheelsFactory shipWithWheelsFactory, Ship ship) {
 
