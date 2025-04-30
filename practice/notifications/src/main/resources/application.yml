@@ -1,0 +1,10 @@
+grpc:
+  client:
+    report-service:
+      address: 'static://localhost:9090' # Порт grpc основного приложения
+      negotiation-type: plaintext
+
+telegram:
+  bot:
+    username: HseMeowbot
+    token: 7386775497:AAFPzPW9nHHfr2__EGiD6aWTL5-IFoug7Ms
