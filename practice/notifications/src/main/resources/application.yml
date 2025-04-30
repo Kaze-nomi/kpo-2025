@@ -7,4 +7,4 @@ grpc:
 telegram:
   bot:
     username: HseMeowbot
-    token: 7386775497:AAFPzPW9nHHfr2__EGiD6aWTL5-IFoug7Ms
+    token: YOUR_TELEGRAM_BOT_TOKEN_HERE

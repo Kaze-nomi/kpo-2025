@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: postgres_db
+    container_name: postgres_db_13
     environment:
       POSTGRES_DB: car_db
       POSTGRES_USER: postgres

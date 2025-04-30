@@ -10,6 +10,9 @@ bin
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 **/logs/
+secret.env
+messages.txt
+subscriptions.txt
 
 # Ignore Gradle project-specific cache directory
 .gradle
