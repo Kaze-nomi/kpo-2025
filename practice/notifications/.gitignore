@@ -11,9 +11,8 @@ bin
 !**/src/test/**/bin/
 **/logs/
 secret.env
-messages.txt
 subscriptions.txt
-
+messages.txt
 # Ignore Gradle project-specific cache directory
 .gradle
 !gradle/wrapper/gradle-wrapper.jar
