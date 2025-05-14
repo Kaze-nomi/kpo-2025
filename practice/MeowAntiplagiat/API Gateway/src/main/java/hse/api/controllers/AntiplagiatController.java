@@ -62,7 +62,6 @@ public class AntiplagiatController {
 
             if (channel == fileStorageClient.getChannel()) {
                 fileStorageClient = FileStorageServiceGrpc.newBlockingStub(fileStorageClient.getChannel());
-
             }
 
             if (channel == fileAnalysisClient.getChannel()) {

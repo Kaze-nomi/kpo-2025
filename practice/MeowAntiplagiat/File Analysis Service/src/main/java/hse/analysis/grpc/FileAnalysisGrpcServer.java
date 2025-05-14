@@ -112,6 +112,9 @@ public class FileAnalysisGrpcServer extends FileAnalysisServiceGrpc.FileAnalysis
     @Override
     public void getWordCloud(AnalyzeFileRequest request, StreamObserver<WordCloudResponse> responseObserver) {
         try {
+            if (!request.getFileId().matches("\\d+")) {
+                throw new IllegalArgumentException("ID файла должен быть числом!");
+            }
             byte[] wordCloud = fileAnalysisService.getWordCloud(request.getFileId());
             WordCloudResponse response = WordCloudResponse.newBuilder()
                     .setWordCloud(com.google.protobuf.ByteString.copyFrom(wordCloud))
