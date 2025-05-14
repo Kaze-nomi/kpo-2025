@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "hse.api.grpc";
+option java_outer_classname = "AnalysisProto";
+
+import "storage.proto";
+
+service FileAnalysisService {
+    rpc AnalyzeFile(AnalyzeFileRequest) returns (AnalyzeFileResponse);
+    rpc getWordCloud(AnalyzeFileRequest) returns (WordCloudResponse);
+}
+
+message AnalyzeFileRequest {
+    string file_id = 1;
+}
+
+message AnalyzeFileResponse {
+    string analysis_result = 1;
+}
+
+message WordCloudResponse {
+    bytes word_cloud = 1;
+}
