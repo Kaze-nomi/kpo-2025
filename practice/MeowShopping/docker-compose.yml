@@ -1,0 +1,130 @@
+services:
+  api-gateway:
+    container_name: meowshopping-api-gateway
+    build: ./API Gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - meow-network
+
+  payments-service:
+    container_name: meowshopping-payments-service
+    build: ./Payments Service
+    ports:
+      - "9091:9091"
+    networks:
+      - meow-network
+    environment:
+      DB_URL: jdbc:postgresql://postgres-payments:5432/payments-db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    depends_on:
+      postgres-payments:
+        condition: service_healthy
+
+  postgres-payments:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: payments-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - meow-network
+    volumes:
+      - postgres_payments_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  orders-service:
+    container_name: meowshopping-orders-service
+    build: ./Orders Service
+    ports:
+      - "9092:9092"
+    networks:
+      - meow-network
+    environment:
+      DB_URL: jdbc:postgresql://postgres-orders:5432/orders-db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    depends_on:
+      postgres-orders:
+        condition: service_healthy
+
+  postgres-orders:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: orders-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_orders_data:/var/lib/postgresql/data
+    networks:
+      - meow-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: bitnami/zookeeper:3.8
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - meow-network
+
+  kafka:
+    image: bitnami/kafka:3.3
+    container_name: kafka
+    ports:
+      - "29092:29092"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    depends_on:
+      - zookeeper
+    networks:
+      - meow-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8085:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    depends_on:
+      - kafka
+    networks:
+      - meow-network
+  
+  frontend:
+    container_name: meowshopping-frontend
+    build: ./Frontend
+    ports:
+      - "1337:1337"
+    networks:
+      - meow-network
+    depends_on:
+      - api-gateway
+    environment:
+      - NODE_ENV=production
+
+volumes:
+  postgres_payments_data:
+  postgres_orders_data:
+
+networks:
+  meow-network:
+    driver: bridge
