@@ -9,11 +9,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Slf4j
 @EnableScheduling
 @SpringBootApplication
-public class NotificationApplication {
+public class KpoApplication {
 	public static void main(String[] args) {
 		
-		SpringApplication.run(NotificationApplication.class, args);
+		SpringApplication.run(KpoApplication.class, args);
 		
 	}
-
 }

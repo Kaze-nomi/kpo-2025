@@ -2,6 +2,7 @@ package hse.kpo.service;
 
 import static java.lang.Integer.parseInt;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -15,7 +16,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import hse.kpo.config.s3.S3ConfigProperties;
 import hse.kpo.entities.CustomerData;
+import hse.kpo.entities.ReportMetadata;
 import hse.kpo.grpc.ReportResponse;
 import hse.kpo.grpc.ReportServiceGrpc;
 import hse.kpo.telegram.NotificationBot;
@@ -34,12 +37,31 @@ public class NotificationService {
     private final ReportServiceGrpc.ReportServiceBlockingStub reportService;
     private final NotificationBot notificationBot;
     private final SubscriptionService subscriptionService;
+    private final S3Service s3Service;
+    private final S3ConfigProperties s3Config;
 
     @Scheduled(fixedRate = 60_000)
     public void checkSalesAndNotify() {
         log.warn("getting report");
         ReportResponse report = reportService.getLatestReport(null);
+        
+        // Сохраняем отчет в S3
+        saveReportToS3(report);
+        
         parseAndSendNotifications(report.getContent());
+    }
+
+    private void saveReportToS3(ReportResponse report) {
+        ReportMetadata metadata = ReportMetadata.builder()
+                .title(report.getTitle())
+                .sourceService("report-service")
+                .reportType("LATEST")
+                .timestamp(LocalDateTime.now())
+                .compressed(s3Config.isCompress())
+                .encrypted(s3Config.isEncrypt())
+                .build();
+        
+        s3Service.uploadReportToS3(metadata, report.getContent());
     }
 
     private void parseAndSendNotifications(String reportContent) {
@@ -78,34 +100,34 @@ public class NotificationService {
             message.append("👥 *Лучшие клиенты:*\n");
 
             customers.stream()
-                    .max(Comparator.comparingInt(CustomerData::getHandPower))
+                    .max(Comparator.comparingInt(CustomerData::handPower))
                     .ifPresent(c -> message.append(String.format(
                             "💪 Силач: %s (руки: %d) %s\n",
-                            c.getName(),
-                            c.getHandPower(),
-                            c.getHandPower() > 80 ? "🔥" : "")));
+                            c.name(),
+                            c.handPower(),
+                            c.handPower() > 80 ? "🔥" : "")));
 
             customers.stream()
-                    .max(Comparator.comparingInt(CustomerData::getLegPower))
+                    .max(Comparator.comparingInt(CustomerData::legPower))
                     .ifPresent(c -> message.append(String.format(
                             "🦵 Спринтер: %s (ноги: %d) %s\n",
-                            c.getName(),
-                            c.getLegPower(),
-                            c.getLegPower() > 100 ? "⚡" : "")));
+                            c.name(),
+                            c.legPower(),
+                            c.legPower() > 100 ? "⚡" : "")));
 
             customers.stream()
-                    .max(Comparator.comparingInt(CustomerData::getIq))
+                    .max(Comparator.comparingInt(CustomerData::iq))
                     .ifPresent(c -> message.append(String.format(
                             "🧠 Гений: %s (IQ: %d) %s\n",
-                            c.getName(),
-                            c.getIq(),
-                            c.getIq() > 130 ? "🌟" : "")));
+                            c.name(),
+                            c.iq(),
+                            c.iq() > 130 ? "🌟" : "")));
 
             message.append("\n📌 *Интересное:*\n")
                     .append(String.format("🚘 Всего машин: %d\n",
-                            customers.stream().mapToInt(CustomerData::getCarsCount).sum()))
+                            customers.stream().mapToInt(CustomerData::carsCount).sum()))
                     .append(String.format("⛵ Корабли: %d чел.\n",
-                            customers.stream().filter(c -> c.getCatamaransCount() > 0).count()))
+                            customers.stream().filter(c -> c.catamaransCount() > 0).count()))
                     .append(getRandomFact(customers));
         }
 
@@ -124,11 +146,11 @@ public class NotificationService {
     private String getRandomFact(List<CustomerData> customers) {
         List<String> facts = new ArrayList<>();
 
-        if (customers.stream().anyMatch(c -> c.getIq() > 140)) {
+        if (customers.stream().anyMatch(c -> c.iq() > 140)) {
             facts.add("🔝 У нас есть клиент с IQ гения!");
         }
 
-        if (customers.stream().anyMatch(c -> c.getCarsCount() > 5)) {
+        if (customers.stream().anyMatch(c -> c.carsCount() > 5)) {
             facts.add("🏁 Наш клиент - настоящий коллекционер авто!");
         }
 

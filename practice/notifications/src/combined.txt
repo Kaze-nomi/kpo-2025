@@ -1,0 +1,598 @@
+package hse.kpo.entities;
+
+import java.time.LocalDateTime;
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class ReportMetadata {
+    private String title;
+    private String sourceService;
+    private String reportType;
+    private LocalDateTime timestamp;
+    private boolean compressed;
+    private boolean encrypted;
+}package hse.kpo.entities;
+
+import lombok.Getter;
+
+public record CustomerData(
+    @Getter
+    String name,
+    @Getter
+    int legPower,
+    @Getter
+    int handPower,
+    @Getter
+    int iq,
+    @Getter
+    int carsCount,
+    @Getter
+    int catamaransCount,
+    boolean isValid
+) {
+    public static final CustomerData INVALID = new CustomerData(
+        null, 0, 0, 0, 0, 0, false
+    );
+
+    public static CustomerData createValid(String name, int legPower,
+                                           int handPower, int iq,
+                                           int cars, int catamarans) {
+        return new CustomerData(
+            name,
+            legPower,
+            handPower,
+            iq,
+            cars,
+            catamarans,
+            name != null &&
+                legPower > 0 && legPower < 1000 &&
+                handPower > 0 && handPower < 1000 &&
+                iq > 0 && iq < 300
+        );
+    }
+}
+package hse.kpo.config.grpc;
+
+import hse.kpo.grpc.ReportServiceGrpc;
+import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class GrpcConfig {
+
+    @GrpcClient("report-service")
+    private ReportServiceGrpc.ReportServiceBlockingStub reportServiceStub;
+
+    @Bean
+    public ReportServiceGrpc.ReportServiceBlockingStub reportServiceStub() {
+        return reportServiceStub;
+    }
+}package hse.kpo.config.telegram;
+
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Configuration;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import hse.kpo.telegram.NotificationBot;
+
+@Configuration
+@RequiredArgsConstructor
+public class BotInitializer {
+    private final TelegramBotsApi telegramBotsApi;
+    private final NotificationBot notificationBot;
+
+    @PostConstruct
+    public void init() {
+        try {
+            telegramBotsApi.registerBot(notificationBot);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException("Failed to register bot", e);
+        }
+    }
+}package hse.kpo.config.telegram;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+
+@Configuration
+@ConfigurationProperties(prefix = "telegram.bot")
+@Getter
+@Setter
+public class TelegramConfig {
+    private String username;
+    private String token;
+    
+    @Bean
+    public TelegramBotsApi telegramBotsApi() throws TelegramApiException {
+        return new TelegramBotsApi(DefaultBotSession.class);
+    }
+}package hse.kpo.telegram;
+
+import hse.kpo.config.telegram.TelegramConfig;
+import hse.kpo.service.SubscriptionService;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+@Component
+@Slf4j
+public class NotificationBot extends TelegramLongPollingBot {
+    private final TelegramConfig config;
+    private final SubscriptionService subscriptionService;
+
+    public NotificationBot(TelegramConfig config, SubscriptionService subscriptionService) {
+        super(config.getToken());
+        this.config = config;
+        this.subscriptionService = subscriptionService;
+    }
+
+    @Override
+    public String getBotToken() {
+        return config.getToken();
+    }
+
+    @Override
+    public String getBotUsername() {
+        return config.getUsername();
+    }
+
+    @Override
+    public void onUpdateReceived(Update update) {
+        if (update.getMessage().isUserMessage() || update.getMessage().isGroupMessage() && update.getMessage().getText().toLowerCase().contains("бот")) {
+            String messageText = update.getMessage().getText();
+            String chatId = update.getMessage().getChatId().toString();
+
+            try {
+                String username = update.getMessage().getFrom().getUserName();
+                Files.writeString(Paths.get("messages.txt"), String.format("%s <%s>: %s\n", username, chatId, messageText), StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                log.error("Failed to write message to file", e);
+            }
+
+            int random = (int) (Math.random() * 100);
+            String response;
+
+            switch (random) {
+                case 0 -> response = "Хм, что же ты хотел этим сказать...";
+                case 1 -> response = "Сильно";
+                case 2 -> response = "Я тебя понял";
+                case 3 -> response = "Мяу";
+                case 4 -> response = "Gleb moment";
+                case 5 -> response = "Интересно!";
+                case 6 -> response = "Ага!";
+                case 7 -> response = "Что-то новенькое";
+                case 8 -> response = "Любопытно";
+                case 9 -> response = "Ну-ну";
+                case 10 -> response = "Это неожиданно";
+                case 11 -> response = "Вот это да!";
+                case 12 -> response = "Согласен";
+                case 13 -> response = "Не думаю так";
+                case 14 -> response = "Хороший вопрос";
+                case 15 -> response = "Понятно";
+                case 16 -> response = "Интересное замечание";
+                case 17 -> response = "Это точно";
+                case 18 -> response = "Скорее всего";
+                case 19 -> response = "Не уверен";
+                case 20 -> response = "Давай попробуем";
+                case 21 -> response = "Возможно";
+                case 22 -> response = "Нужно подумать";
+                case 23 -> response = "Пока не ясно";
+                case 24 -> response = "Хорошая идея!";
+                case 25 -> response = "Это важно";
+                case 26 -> response = "Неплохо!";
+                case 27 -> response = "Звучит интересно";
+                case 28 -> response = "Так и есть";
+                case 29 -> response = "Да ладно!";
+                case 30 -> response = "Ого!";
+                case 31 -> response = "Это что-то новенькое";
+                case 32 -> response = "Я так не думаю";
+                case 33 -> response = "Сложно сказать";
+                case 34 -> response = "Хм...";
+                case 35 -> response = "Загадочно";
+                case 36 -> response = "Не уверен в этом";
+                case 37 -> response = "Прекрасно";
+                case 38 -> response = "Неожиданно";
+                case 39 -> response = "Любопытно";
+                case 40 -> response = "Довольно странно";
+                case 41 -> response = "Согласен!";
+                case 42 -> response = "Интересное мнение";
+                case 43 -> response = "Точно!";
+                case 44 -> response = "Не думаю";
+                case 45 -> response = "Это не так";
+                case 46 -> response = "Возможно";
+                case 47 -> response = "Не уверен";
+                case 48 -> response = "Да!";
+                case 49 -> response = "Нет";
+                case 50 -> response = "Может быть";
+                case 51 -> response = "Скорее да";
+                case 52 -> response = "Скорее нет";
+                case 53 -> response = "Абсолютно!";
+                case 54 -> response = "Никак нет";
+                case 55 -> response = "Наверное";
+                case 56 -> response = "Трудно сказать";
+                case 57 -> response = "Это точно";
+                case 58 -> response = "Не думаю";
+                case 59 -> response = "Да уж";
+                case 60 -> response = "Не знаю";
+                case 61 -> response = "Это надо обсудить";
+                case 62 -> response = "Вполне возможно";
+                case 63 -> response = "Никогда не слышал";
+                case 64 -> response = "Прекрасно";
+                case 65 -> response = "Это интересно";
+                case 66 -> response = "Неужели?";
+                case 67 -> response = "Звучит неплохо";
+                case 68 -> response = "Как сказать";
+                case 69 -> response = "Удивительно!";
+                case 70 -> response = "Это что-то новенькое";
+                case 71 -> response = "Я не уверен";
+                case 72 -> response = "Пожалуй";
+                case 73 -> response = "Не совсем";
+                case 74 -> response = "Это необходимо";
+                case 75 -> response = "Возможно";
+                case 76 -> response = "Думаю, да";
+                case 77 -> response = "Думаю, нет";
+                case 78 -> response = "Это важно";
+                case 79 -> response = "Не уверен";
+                case 80 -> response = "Может быть";
+                case 81 -> response = "Это возможно";
+                case 82 -> response = "Как знать";
+                case 83 -> response = "Не думаю";
+                case 84 -> response = "Это точно";
+                case 85 -> response = "Не совсем";
+                case 86 -> response = "Как бы не так";
+                case 87 -> response = "Не знаю";
+                case 88 -> response = "Трудно сказать";
+                case 89 -> response = "Да!";
+                case 90 -> response = "Нет";
+                case 91 -> response = "Может быть";
+                case 92 -> response = "Наверное";
+                case 93 -> response = "Навряд ли";
+                case 94 -> response = "Это точно";
+                case 95 -> response = "Не уверен";
+                case 96 -> response = "Да уж";
+                case 97 -> response = "Это так";
+                case 98 -> response = "Скорее да";
+                case 99 -> response = "Скорее нет";
+                default -> response = "Как ты сюда попал? Ты не должен видеть это сообщение.";
+            }
+
+            sendTextMessage(chatId, response);
+
+            switch (messageText) {
+                case "/start" -> {
+                    subscriptionService.subscribe(chatId);
+                    sendTextMessage(chatId, "Привет!");
+                }
+                case "/stop" -> {
+                    subscriptionService.unsubscribe(chatId);
+                    sendTextMessage(chatId, "Пока!");
+                }
+            }
+        }
+    }
+
+    private void sendTextMessage(String chatId, String text) {
+        SendMessage message = new SendMessage(chatId, text);
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+}package hse.kpo.service;
+
+import static java.lang.Integer.parseInt;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import hse.kpo.entities.CustomerData;
+import hse.kpo.grpc.ReportResponse;
+import hse.kpo.grpc.ReportServiceGrpc;
+import hse.kpo.telegram.NotificationBot;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class NotificationService {
+
+    private final ReportServiceGrpc.ReportServiceBlockingStub reportService;
+    private final NotificationBot notificationBot;
+    private final SubscriptionService subscriptionService;
+
+    @Scheduled(fixedRate = 60_000)
+    public void checkSalesAndNotify() {
+        log.warn("getting report");
+        ReportResponse report = reportService.getLatestReport(null);
+        parseAndSendNotifications(report.getContent());
+    }
+
+    private void parseAndSendNotifications(String reportContent) {
+        List<String> lines = Arrays.stream(reportContent.split("\n"))
+                .map(String::trim)
+                .filter(line -> !line.isEmpty())
+                .collect(Collectors.toList());
+
+        // Парсинг продаж
+        Map<String, Long> salesByType = lines.stream()
+                .filter(line -> line.startsWith("Операция: Продажа:"))
+                .map(this::parseSaleType)
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(type -> type, LinkedHashMap::new, Collectors.counting()));
+
+        // Парсинг клиентов
+        List<CustomerData> customers = lines.stream()
+                .filter(line -> line.startsWith("Покупатели:"))
+                .map(this::parseCustomer)
+                .filter(c -> c != CustomerData.INVALID)
+                .collect(Collectors.toList());
+
+        if (salesByType.isEmpty() && customers.isEmpty())
+            return;
+
+        StringBuilder message = new StringBuilder("🎉 *Свежий отчёт!* 🎉\n\n");
+
+        if (!salesByType.isEmpty()) {
+            message.append("🚗 *Топ продаж:*\n");
+            salesByType.forEach((type, count) -> message
+                    .append(String.format("- %s: %d шт. %s\n", type, count, getCarEmoji(type))));
+            message.append("\n");
+        }
+
+        if (!customers.isEmpty()) {
+            message.append("👥 *Лучшие клиенты:*\n");
+
+            customers.stream()
+                    .max(Comparator.comparingInt(CustomerData::getHandPower))
+                    .ifPresent(c -> message.append(String.format(
+                            "💪 Силач: %s (руки: %d) %s\n",
+                            c.getName(),
+                            c.getHandPower(),
+                            c.getHandPower() > 80 ? "🔥" : "")));
+
+            customers.stream()
+                    .max(Comparator.comparingInt(CustomerData::getLegPower))
+                    .ifPresent(c -> message.append(String.format(
+                            "🦵 Спринтер: %s (ноги: %d) %s\n",
+                            c.getName(),
+                            c.getLegPower(),
+                            c.getLegPower() > 100 ? "⚡" : "")));
+
+            customers.stream()
+                    .max(Comparator.comparingInt(CustomerData::getIq))
+                    .ifPresent(c -> message.append(String.format(
+                            "🧠 Гений: %s (IQ: %d) %s\n",
+                            c.getName(),
+                            c.getIq(),
+                            c.getIq() > 130 ? "🌟" : "")));
+
+            message.append("\n📌 *Интересное:*\n")
+                    .append(String.format("🚘 Всего машин: %d\n",
+                            customers.stream().mapToInt(CustomerData::getCarsCount).sum()))
+                    .append(String.format("⛵ Корабли: %d чел.\n",
+                            customers.stream().filter(c -> c.getCatamaransCount() > 0).count()))
+                    .append(getRandomFact(customers));
+        }
+
+        sendToTelegram(message.toString());
+    }
+
+    private String getCarEmoji(String type) {
+        return switch (type.toUpperCase()) {
+            case "SUV" -> "🚙";
+            case "SEDAN" -> "🚗";
+            case "HATCHBACK" -> "🚐";
+            default -> "🏎️";
+        };
+    }
+
+    private String getRandomFact(List<CustomerData> customers) {
+        List<String> facts = new ArrayList<>();
+
+        if (customers.stream().anyMatch(c -> c.getIq() > 140)) {
+            facts.add("🔝 У нас есть клиент с IQ гения!");
+        }
+
+        if (customers.stream().anyMatch(c -> c.getCarsCount() > 5)) {
+            facts.add("🏁 Наш клиент - настоящий коллекционер авто!");
+        }
+
+        return !facts.isEmpty()
+                ? "\n💡 Факт дня: " + facts.get(new Random().nextInt(facts.size()))
+                : "\n✨ Сегодня все клиенты особенные!";
+    }
+
+    private CustomerData parseCustomer(String raw) {
+        try {
+            String name = extractValue(raw, "name=([^,]+)");
+            int legPower = parseInt(extractValue(raw, "legPower=(\\d+)"));
+            int handPower = parseInt(extractValue(raw, "handPower=(\\d+)"));
+            int iq = parseInt(extractValue(raw, "iq=(\\d+)"));
+
+            // Парсинг количества машин
+            String carsStr = extractValue(raw, "cars=\\[(.*?)]");
+            int carsCount = 0;
+            if (carsStr != null && !carsStr.isEmpty()) {
+                carsCount = (int) Pattern.compile("Car\\(").matcher(carsStr).results().count();
+            }
+
+            // Парсинг катамаранов
+            String shipValue = extractValue(raw, "ship=([^,)]+)");
+            int catamaransCount = "null".equals(shipValue) ? 0 : 1;
+
+            return CustomerData.createValid(
+                    name.trim(),
+                    legPower,
+                    handPower,
+                    iq,
+                    carsCount,
+                    catamaransCount);
+        } catch (Exception e) {
+            log.error("Error parsing customer: {}", raw, e);
+            return CustomerData.INVALID;
+        }
+    }
+
+    private String parseSaleType(String saleLine) {
+        Matcher matcher = Pattern.compile("Продажа: (\\w+) VIN-\\d+").matcher(saleLine);
+        return matcher.find() ? matcher.group(1) : null;
+    }
+
+    private void sendToTelegram(String message) {
+        log.warn("sending to tg");
+        Set<String> activeChats = subscriptionService.getActiveSubscriptions();
+
+        activeChats.forEach(chatId -> {
+            SendMessage sendMessage = new SendMessage(chatId, message);
+            try {
+                notificationBot.execute(sendMessage);
+            } catch (TelegramApiException e) {
+                log.error("Failed to send message to chat {}: {}", chatId, e.getMessage());
+            }
+        });
+    }
+
+    private String extractValue(String input, String regex) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(input);
+        return matcher.find() ? matcher.group(1).trim() : null;
+    }
+}package hse.kpo.service;
+
+import java.util.concurrent.CompletableFuture;
+
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+import hse.kpo.entities.ReportMetadata;
+import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.services.s3.S3Client;
+
+@Service
+@Slf4j
+public class S3Service {
+
+    private final S3Client s3Client;
+
+    public S3Service(S3Client s3Client) {
+        this.s3Client = s3Client;
+    }
+
+    @Async
+    public CompletableFuture<Void> uploadReportToS3(ReportMetadata reportMetadata, String reportContent) {
+        return s3Client.putObject(r -> r
+                .bucket("kpo-reports")
+                .key(reportMetadata.getTitle())
+                .content(reportContent));
+    }
+
+}package hse.kpo.service;
+
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+@Service
+public class SubscriptionService {
+    private static final Path FILE_PATH = Paths.get("subscriptions.txt");
+
+    public SubscriptionService() {
+        try {
+            if (!Files.exists(FILE_PATH)) {
+                Files.createFile(FILE_PATH);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to initialize subscriptions file", e);
+        }
+    }
+
+    public void subscribe(String chatId) {
+        try {
+            Set<String> activeChatIds = getActiveSubscriptions();
+            activeChatIds.add(chatId);
+            Files.write(FILE_PATH, activeChatIds);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to subscribe", e);
+        }
+    }
+
+    public void unsubscribe(String chatId) {
+        try {
+            Set<String> activeChatIds = getActiveSubscriptions();
+            activeChatIds.remove(chatId);
+            Files.write(FILE_PATH, activeChatIds);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to unsubscribe", e);
+        }
+    }
+
+    public Set<String> getActiveSubscriptions() {
+        try {
+            return new HashSet<>(Files.readAllLines(FILE_PATH));
+        } catch (IOException e) {
+            return Collections.emptySet();
+        }
+    }
+}
+
+package hse.kpo;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@Slf4j
+@EnableScheduling
+@SpringBootApplication
+public class NotificationApplication {
+	public static void main(String[] args) {
+		
+		SpringApplication.run(NotificationApplication.class, args);
+		
+	}
+
+}
