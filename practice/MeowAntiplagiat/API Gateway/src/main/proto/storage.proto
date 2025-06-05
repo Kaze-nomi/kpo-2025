@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "hse.api.grpc";
+option java_outer_classname = "StorageProto";
+
+service FileStorageService {
+    rpc UploadFile(UploadFileRequest) returns (UploadFileResponse);
+    rpc GetFile(GetFileRequest) returns (GetFileResponse);
+}
+
+message UploadFileRequest {
+    bytes file_content = 1;
+    string file_name = 2;
+}
+
+message UploadFileResponse {
+    string file_id = 1;
+}
+
+message GetFileRequest {
+    string file_id = 1;
+}
+
+message GetFileResponse {
+    bytes file_content = 1;
+    string file_name = 2;
+}

@@ -1,0 +1,33 @@
+spring:
+  main:
+    web-application-type: none
+  application:
+    name: file-analysis-app
+  datasource:
+    url: jdbc:postgresql://postgres-file-analysis:5432/file-analysis-db
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+grpc:
+  server:
+    port: 9092
+    enabled: true
+  client:
+    file-storage-service:
+      address: 'static://file-storing-service:9091'
+      negotiation-type: plaintext
+      retry:
+        enabled: true
+        max-attempts: 2147483647
+        initial-backoff: 5s
+        max-backoff: 60s
+        backoff-multiplier: 1.5
