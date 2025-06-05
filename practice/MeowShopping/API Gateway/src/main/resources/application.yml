@@ -1,8 +1,0 @@
-grpc:
-  client:
-    payments-service:
-      address: 'static://payments-service:9091'
-      negotiation-type: plaintext
-    orders-service:
-      address: 'static://orders-service:9092'
-      negotiation-type: plaintext
