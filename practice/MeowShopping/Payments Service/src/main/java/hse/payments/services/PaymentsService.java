@@ -61,9 +61,6 @@ public class PaymentsService {
         }
     }
 
-    // Нужна ли тут @Version? И как она вообще может меняться если операции в БД атомарны?
-    // Exactly once ли withdraw и как вообще возможно сделать реальный exactly once? Нам же в любом случае нужно чтобы хотя бы БД или сама Кафка были живы, иначе мы потеряем запрос на снятие денег.
-
     @Transactional
     @Retryable(value = { 
             ObjectOptimisticLockingFailureException.class,

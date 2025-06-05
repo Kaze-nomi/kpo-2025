@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import AccountForm from './components/AccountForm';
@@ -8,16 +10,47 @@ import PaymentSection from './components/PaymentSection';
 import OrderList from './components/OrderList';
 import ErrorPage from './components/ErrorPage';
 import Footer from './components/Footer';
-import { ErrorProvider, useError } from './components/GlobalErrorNotification';
+import { NotificationProvider, useNotification } from './components/GlobalNotification';
 import api from './services/api';
+import { useBalance } from './components/getBalance';
+import { useOrders } from './components/getOrders';
+import { WebSocketProvider, useWebSocket } from './components/WebSocketContext';
+
 
 const MainApp = () => {
-    const [activeTab, setActiveTab] = useState('payments');
-    const [userId, setUserId] = useState(() => localStorage.getItem('userId') || '');
+    const [activeTab, setActiveTab] = React.useState('payments');
+    const [userId, setUserId] = React.useState(() => localStorage.getItem('userId') || '');
     const navigate = useNavigate();
-    const { showError } = useError();
+    const { showNotification } = useNotification();
+    const { connect } = useWebSocket();
 
-    api.setupInterceptors(navigate, showError, setUserId);
+
+    api.setupInterceptors(navigate, showNotification, setUserId);
+
+    const { balance, isLoading: isBalanceLoading, fetchBalance } = useBalance(userId);
+    const { orders, isLoading: isOrdersLoading, fetchOrders } = useOrders(userId);
+
+    React.useEffect(() => {
+        if (!userId) return;
+        fetchBalance().catch((error) => {
+            if (error.status === 500 && !error.isAccountError) {
+                showNotification(error.message, 'error');
+            }
+        });
+        connect(userId, handleWebSocketUpdate);
+    }, [userId, connect, fetchBalance, showNotification]);
+
+    const handleWebSocketUpdate = (orderUpdate) => {
+        fetchOrders();
+        if (orderUpdate.status === "FINISHED") {
+            showNotification("Ваш заказ с ID " + orderUpdate.id + " \"" + orderUpdate.description + "\" завершён! :)", 'success', 10000);
+            fetchBalance();
+        } else if (orderUpdate.status === "CANCELLED") {
+            showNotification("Ваш заказ с ID " + orderUpdate.id + " \"" + orderUpdate.description + "\" был отменён! :(", 'warning', 10000);
+        } else {
+            showNotification("Ваш заказ с ID " + orderUpdate.id + " \"" + orderUpdate.description + "\" находится в обработке!", 'success', 10000);
+        }
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('userId');
@@ -40,7 +73,7 @@ const MainApp = () => {
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-1 space-y-6">
-                            <BalanceCard userId={userId} />
+                            <BalanceCard userId={userId} balance={balance} isLoading={isBalanceLoading} />
 
                             <div className="bg-white p-6 rounded-xl shadow-md">
                                 <h2 className="text-xl font-semibold mb-4 text-purple-700">Быстрые действия</h2>
@@ -68,18 +101,27 @@ const MainApp = () => {
                         </div>
 
                         <div className="lg:col-span-2">
-                            {activeTab === 'payments' ? <PaymentSection userId={userId} /> : null}
+                            {activeTab === 'payments' ? (
+                                <PaymentSection userId={userId} onDepositSuccess={fetchBalance} />
+                            ) : null}
                             {activeTab === 'orders' ? (
                                 <div className="space-y-8">
-                                    <OrderSection userId={userId} />
-                                    <OrderList userId={userId} />
+                                    <OrderSection userId={userId} onOrderCreated={() => {
+                                        fetchOrders();
+                                        fetchBalance();
+                                    }} />
+                                    <OrderList
+                                        userId={userId}
+                                        orders={orders}
+                                        isLoading={isOrdersLoading}
+                                        fetchOrders={fetchOrders}
+                                    />
                                 </div>
                             ) : null}
                         </div>
                     </div>
                 )}
             </main>
-
             <Footer />
         </div>
     );
@@ -87,14 +129,16 @@ const MainApp = () => {
 
 const App = () => {
     return (
-        <ErrorProvider>
-            <Router>
-                <Routes>
-                    <Route path="/error" element={<ErrorPage />} />
-                    <Route path="*" element={<MainApp />} />
-                </Routes>
-            </Router>
-        </ErrorProvider>
+        <WebSocketProvider>
+            <NotificationProvider>
+                <Router>
+                    <Routes>
+                        <Route path="/error" element={<ErrorPage />} />
+                        <Route path="*" element={<MainApp />} />
+                    </Routes>
+                </Router>
+            </NotificationProvider>
+        </WebSocketProvider>
     );
 };
 

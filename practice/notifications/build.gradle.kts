@@ -36,6 +36,10 @@ dependencies {
     implementation("io.grpc:grpc-protobuf:1.62.2")
     implementation("net.devh:grpc-client-spring-boot-starter:3.0.0.RELEASE")
     compileOnly("org.apache.tomcat:annotations-api:6.0.53")
+	implementation("commons-io:commons-io:2.11.0")
+	implementation("org.apache.commons:commons-compress:1.21")
+    implementation("software.amazon.awssdk:s3:2.25.58")
+    implementation("software.amazon.awssdk.crt:aws-crt:0.29.25")
 }
 
 protobuf {

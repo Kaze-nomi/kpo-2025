@@ -17,9 +17,6 @@ import hse.payments.services.PaymentsService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-// Что здесь и в KafkaConsumerService что будет если два потока одновременно начнут выполнение? Может ли быть такое что запишется сразу два 
-// одинаковых события в outbox? 
-
 @Component
 @RequiredArgsConstructor
 public class InboxProcessor {

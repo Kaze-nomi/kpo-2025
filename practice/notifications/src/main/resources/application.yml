@@ -7,4 +7,10 @@ grpc:
 telegram:
   bot:
     username: HseMeowbot
-    token: YOUR_TELEGRAM_BOT_TOKEN_HERE
+    token: 7386775497:AAH3WOc5gaHJm2UOkd3YPZ4SZ3fIO9RlDl4
+
+s3:
+  endpoint: http://localhost:9000
+  bucket: kpo-reports
+  compress: false
+  encrypt: false

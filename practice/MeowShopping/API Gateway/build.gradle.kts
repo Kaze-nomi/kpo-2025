@@ -33,15 +33,6 @@ repositories {
 	mavenCentral()
 }
 
-tasks.withType<JacocoReport> {
-	classDirectories.setFrom(
-		sourceSets.main.get().output.asFileTree.matching {
-			exclude("hse/api/grpc/**")
-			exclude("hse/api/ShoppingApplication.*")
-		}
-	)
-}
-
 dependencies {
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -102,8 +93,8 @@ tasks.withType<Test> {
 tasks.jacocoTestReport {
 	classDirectories.setFrom(
 		sourceSets.main.get().output.asFileTree.matching {
-			exclude("hse/api/grpc/**")
-			exclude("hse/api/ShoppingApplication.*")
+			exclude("hse/api/proto/grpc/**")
+			exclude("hse/api/APIApplication.*")
 		}
 	)
 }

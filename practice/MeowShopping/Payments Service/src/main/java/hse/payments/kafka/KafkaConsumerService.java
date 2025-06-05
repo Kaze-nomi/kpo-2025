@@ -8,13 +8,19 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
+
 public class KafkaConsumerService {
 
     private final InboxEventRepository inboxRepository;
@@ -23,9 +29,16 @@ public class KafkaConsumerService {
 
     @KafkaListener(topics = "order-payment", groupId = "hse-shopping")
     @Transactional
+    @Retryable(
+            value = { 
+                    ObjectOptimisticLockingFailureException.class,
+                    DataAccessResourceFailureException.class,
+                    TransientDataAccessException.class 
+            }, 
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100, multiplier = 2.0)
+    )
     public void handleAddedOrder(String event) {
-
-        // Проблема: если БД order сервиса умирала (и очистилась), то новые созданные там заказы не будут обработаны здесь
 
         OrderAddedEvent orderAddedEvent = null;
 
@@ -35,8 +48,10 @@ public class KafkaConsumerService {
             throw new RuntimeException("Ошибка десериализации заказа", e);
         }
 
-        if (inboxRepository.existsById(Long.valueOf(orderAddedEvent.orderId()))) {
-            return;
+        if (inboxRepository.findById(Long.valueOf(orderAddedEvent.orderId())).isPresent()) {
+            if (inboxRepository.findById(Long.valueOf(orderAddedEvent.orderId())).get().getPayload().equals(event)) {
+                return;
+            }
         }
 
         InboxEvent inboxEvent = new InboxEvent();

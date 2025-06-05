@@ -8,12 +8,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hse.orders.domains.Order;
 import hse.orders.kafka.events.OrderAddedEvent;
+import hse.orders.websocket.OrderNotificationController;
 
 @Service
 public class KafkaProducerService {
     
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
+
+    @Autowired
+    private OrderNotificationController notificationController;
+
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -37,5 +42,7 @@ public class KafkaProducerService {
 
         kafkaTemplate.send("order-payment", payload);
 
+        notificationController.notifyOrderUpdate(order);
+        
     }
 }

@@ -34,6 +34,8 @@ spring:
       properties:
         spring.json.add.type.headers: false
 
+server:
+  port: 8081
 
 grpc:
   server:

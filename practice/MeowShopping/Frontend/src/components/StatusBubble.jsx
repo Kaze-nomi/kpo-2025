@@ -1,32 +1,26 @@
 import React from 'react';
 
 const StatusBubble = ({ status }) => {
-  // Приводим статус к нижнему регистру для унификации
   const statusLower = status.toLowerCase();
   
   let bgColor = 'bg-gray-200';
   let textColor = 'text-gray-800';
   
-  if (statusLower.includes('created') || statusLower.includes('создан')) {
+  if (statusLower.includes('new')) {
     bgColor = 'bg-blue-100';
     textColor = 'text-blue-800';
-  } else if (statusLower.includes('processing') || statusLower.includes('обработк')) {
-    bgColor = 'bg-yellow-100';
-    textColor = 'text-yellow-800';
-  } else if (statusLower.includes('completed') || statusLower.includes('завершен')) {
+  } else if (statusLower.includes('finished')) {
     bgColor = 'bg-green-100';
     textColor = 'text-green-800';
-  } else if (statusLower.includes('cancelled') || statusLower.includes('отменен')) {
+  } else if (statusLower.includes('canceled')) {
     bgColor = 'bg-red-100';
     textColor = 'text-red-800';
   }
 
-  // Красивое отображение статуса
   const getDisplayStatus = () => {
-    if (statusLower.includes('created')) return 'Создан';
-    if (statusLower.includes('processing')) return 'В обработке';
-    if (statusLower.includes('completed')) return 'Завершен';
-    if (statusLower.includes('cancelled')) return 'Отменен';
+    if (statusLower.includes('new')) return 'В обработке';
+    if (statusLower.includes('finished')) return 'Завершен';
+    if (statusLower.includes('canceled')) return 'Отменен';
     return status;
   };
 

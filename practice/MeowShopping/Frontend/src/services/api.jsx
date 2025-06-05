@@ -1,15 +1,13 @@
 import axios from 'axios';
 
-// Создаем экземпляр axios без хуков
 const api = axios.create({
   baseURL: '/api/shopping',
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 10000,
+  timeout: 35000,
 });
 
-// Функция для установки хуков после создания экземпляра
 let navigateHandler;
 let showErrorHandler;
 let setUserIdHandler;
@@ -72,8 +70,9 @@ api.interceptors.response.use(
     }
 
     if (showErrorHandler) {
-      if (errorObj.status === 503 || errorObj.status === 502) {
+      if (errorObj.status === 503 || errorObj.status === 502 || (errorObj.status === 500 && errorObj.message.includes('Could not open JPA EntityManager for transaction'))) {
         showErrorHandler('Сервис сейчас спит, попробуйте позже! 💤', 'warning');
+        errorObj.status = 999;
       } else if (errorObj.status < 500 && errorObj.status >= 400) {
         showErrorHandler("Ошибка клиента: " + (errorObj.message || 'Неизвестная ошибка'), 'error');
       } else if (errorObj.status !== 500) {
@@ -89,7 +88,8 @@ export default {
   payments: {
     createAccount: (userId) => api.post('/payments/account', null, { headers: { 'user-id': userId } }),
     deposit: (userId, amount) => api.post('/payments/deposit', null, { headers: { 'user-id': userId }, params: { amount } }),
-    getBalance: (userId) => api.get('/payments/balance', { headers: { 'user-id': userId } })
+    getBalance: (userId) => api.get('/payments/balance', { headers: { 'user-id': userId } }),
+    accountExists: (userId) => api.get('/payments/account-exists', { headers: { 'user-id': userId } })
   },
   orders: {
     createOrder: (userId, amount, description) => api.post('/orders', null, { headers: { 'user-id': userId }, params: { amount, description } }),

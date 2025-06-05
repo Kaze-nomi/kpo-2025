@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import api from '../services/api';
+import { useNotification } from './GlobalNotification';
 
-const PaymentSection = () => {
+const PaymentSection = ({ userId, onDepositSuccess }) => {
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { showNotification } = useNotification();
 
   const handleDeposit = async (e) => {
-    const userId = localStorage.getItem('userId');
     if (!userId) { return; }
     e.preventDefault();
     setIsLoading(true);
@@ -15,9 +16,12 @@ const PaymentSection = () => {
       const response = await api.payments.deposit(userId, parseFloat(amount));
       setMessage(response.data);
       setAmount('');
+      if (onDepositSuccess) onDepositSuccess();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data || 'Ошибка при пополнении счета');
+      if (error.status === 500 && !error.isAccountError) {
+        showNotification(error.message, 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -42,7 +46,7 @@ const PaymentSection = () => {
         </div>
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading}green
           className="btn-primary w-full disabled:opacity-50"
         >
           {isLoading ? (
@@ -56,7 +60,7 @@ const PaymentSection = () => {
         </button>
       </form>
       {message && (
-        <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-lg animate-pulse">
+        <div className="mt-4 p-3 bg-green-100 text--700 rounded-lg animate-pulse">
           {message}
         </div>
       )}

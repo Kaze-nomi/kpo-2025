@@ -49,6 +49,26 @@ public class ShoppingController {
         }
     }
 
+    @GetMapping("/payments/account-exists")
+    @Operation(summary = "Проверить наличие счета пользователя")
+    public ResponseEntity<String> accountExists(
+            @RequestHeader("user-id") String userId) {
+        try {
+            paymentsServiceClient.getBalance(
+                    GetBalanceRequest.newBuilder()
+                            .setUserId(userId)
+                            .build());
+            
+            return ResponseEntity.ok("Exists");
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getDescription().contains("Аккаунт не найден")) {
+                return ResponseEntity.ok("Not exists");
+            } else {
+                return handleGrpcException(e, "payments");
+            }
+        }
+    }
+
     @PostMapping("/payments/deposit")
     @Operation(summary = "Пополнить счет")
     public ResponseEntity<String> deposit(
@@ -175,7 +195,7 @@ public class ShoppingController {
     
     // ========== Обработка ошибок ==========
     
-    private ResponseEntity<String> handleGrpcException(StatusRuntimeException e, String serviceName) {
+    public ResponseEntity<String> handleGrpcException(StatusRuntimeException e, String serviceName) {
         if (e.getStatus().getCode() == Status.Code.UNAVAILABLE) {
             String message = String.format("Сервис %s сейчас спит, попробуйте позже! 💤", serviceName);
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)

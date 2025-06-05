@@ -1,19 +1,17 @@
 package hse.kpo.entities;
 
-import lombok.Getter;
-
 public record CustomerData(
-    @Getter
+
     String name,
-    @Getter
+
     int legPower,
-    @Getter
+
     int handPower,
-    @Getter
+
     int iq,
-    @Getter
+
     int carsCount,
-    @Getter
+
     int catamaransCount,
     boolean isValid
 ) {

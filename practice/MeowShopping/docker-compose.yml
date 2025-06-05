@@ -42,6 +42,7 @@ services:
     container_name: meowshopping-orders-service
     build: ./Orders Service
     ports:
+      - "8081:8081"
       - "9092:9092"
     networks:
       - meow-network
@@ -118,6 +119,8 @@ services:
       - meow-network
     depends_on:
       - api-gateway
+      - orders-service
+      - payments-service
     environment:
       - NODE_ENV=production
 

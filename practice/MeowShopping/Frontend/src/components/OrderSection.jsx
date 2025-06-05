@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import api from '../services/api';
+import { useNotification } from './GlobalNotification';
 
 const OrderSection = () => {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { showNotification } = useNotification();
 
   const handleCreateOrder = async (e) => {
     const userId = localStorage.getItem('userId');
@@ -17,9 +19,12 @@ const OrderSection = () => {
       setMessage(response.data);
       setAmount('');
       setDescription('');
+      setMessage('true');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage(error.response?.data || 'Ошибка при создании заказа');
+      if (error.status === 500 && !error.isAccountError) {
+        showNotification(error.message, 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -69,8 +74,8 @@ const OrderSection = () => {
         </button>
       </form>
       {message && (
-        <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-lg animate-pulse">
-          {message}
+        <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-lg animate-pulse" style={{animationDuration: '3s'}}>
+          {"Заказ успешно создан!"}
         </div>
       )}
     </div>
