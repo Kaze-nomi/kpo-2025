@@ -17,14 +17,17 @@ export const useBalance = (userId) => {
 
         try {
             const response = await api.payments.getBalance(userId);
-            const balanceValue = response.data;
-            const match = balanceValue.match(/[\d,]+\.?\d*/);
+            const balanceText = response.data;
+            const match = balanceText.match(/Текущий баланс:\s*([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)/);
+            var balanceValue = 0;
             if (match) {
-                setBalance(match[0]);
+                balanceValue = parseFloat(match[1]);
             }
-        } catch {
+            setBalance(balanceValue.toLocaleString('ru-RU'));
+        } catch (err) {
             error = true;
-        } finally {
+        }
+        finally {
             if (!error) {
                 setIsLoading(false);
             }

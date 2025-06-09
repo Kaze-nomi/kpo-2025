@@ -19,7 +19,6 @@ public class KafkaProducerService {
     @Autowired
     private OrderNotificationController notificationController;
 
-
     @Autowired
     private ObjectMapper objectMapper;
 

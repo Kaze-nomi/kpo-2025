@@ -61,7 +61,7 @@ const PaymentSection = ({ userId, onDepositSuccess }) => {
       </form>
       {message && (
         <div className="mt-4 p-3 bg-green-100 text--700 rounded-lg animate-pulse">
-          {message}
+          Баланс успешно пополнен!
         </div>
       )}
     </div>
