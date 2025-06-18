@@ -27,9 +27,7 @@ const OrderList = ({
 
     const receipt = {
       id: order.id,
-      date: new Date().toLocaleDateString('ru-RU'),
-      time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-      amount: order.amount,
+      amount: order.amount.toLocaleString('ru-RU'),
       description: order.description,
       status: order.status,
       paymentMethod: `ВТБ •••• ${cardLast4}`,
@@ -89,10 +87,6 @@ const OrderList = ({
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex justify-between border-b pb-2">
-                    <span className="text-gray-600">Дата:</span>
-                    <span className="font-medium">{receiptData.date} в {receiptData.time}</span>
-                  </div>
 
                   <div className="flex justify-between border-b pb-2">
                     <span className="text-gray-600">Транзакция:</span>
@@ -111,7 +105,7 @@ const OrderList = ({
 
                   <div className="flex justify-between text-lg pt-2">
                     <span className="font-bold">Итого:</span>
-                    <span className="font-bold text-purple-700">{receiptData.amount.toFixed(2)} ₽</span>
+                    <span className="font-bold text-purple-700">{receiptData.amount} ₽</span>
                   </div>
                 </div>
 
@@ -184,13 +178,10 @@ const OrderList = ({
                       <StatusBubble status={order.status} />
                     </span>
                   </h3>
-                  <p className="text-gray-500 text-sm mt-1">
-                    {order.createdAt}
-                  </p>
                 </div>
                 <div className="flex items-center">
                   <span className="text-gray-700 mr-4">
-                    {order.amount.toFixed(2)} ₽
+                    {order.amount.toLocaleString('ru-RU')} ₽
                   </span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -208,16 +199,8 @@ const OrderList = ({
                 <div className="animate-fadeIn px-4 pb-4 pt-2 border-t border-gray-200">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-gray-500">Дата создания</p>
-                      <p className="font-medium">{order.createdAt || 'Неизвестно'}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Последнее обновление</p>
-                      <p className="font-medium">{order.updatedAt || 'Неизвестно'}</p>
-                    </div>
-                    <div>
                       <p className="text-gray-500">Сумма заказа</p>
-                      <p className="font-medium text-lg text-purple-700">{order.amount.toFixed(2)} ₽</p>
+                      <p className="font-medium text-lg text-purple-700">{order.amount.toLocaleString('ru-RU')} ₽</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Статус</p>
